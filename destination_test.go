@@ -1,16 +1,16 @@
-package connectorname_test
+package weaviate_test
 
 import (
 	"context"
 	"testing"
 
-	connectorname "github.com/conduitio/conduit-connector-connectorname"
+	weaviate "github.com/conduitio-labs/conduit-connector-weaviate"
 	"github.com/matryer/is"
 )
 
 func TestTeardown_NoOpen(t *testing.T) {
 	is := is.New(t)
-	con := connectorname.NewDestination()
+	con := weaviate.NewDestination()
 	err := con.Teardown(context.Background())
 	is.NoErr(err)
 }

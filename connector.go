@@ -1,4 +1,4 @@
-package connectorname
+package weaviate
 
 import sdk "github.com/conduitio/conduit-connector-sdk"
 
