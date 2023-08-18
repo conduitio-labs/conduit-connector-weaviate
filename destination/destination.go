@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination/handler"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
@@ -15,8 +16,8 @@ import (
 type Destination struct {
 	sdk.UnimplementedDestination
 
-	config DestinationConfig
-	client *weaviate.Client
+	config  DestinationConfig
+	handler *handler.RecordHandler
 }
 
 type ModuleApiKey struct {
@@ -27,7 +28,7 @@ type ModuleApiKey struct {
 type DestinationConfig struct {
 	config.Config
 	moduleApiKey ModuleApiKey `json:"module_api_key"`
-	generateUUID string       `json:"generate_uuid"`
+	generateUUID bool         `json:"generate_uuid"`
 }
 
 func New() sdk.Destination {
@@ -78,27 +79,21 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	//TODO: need to look into this is actually creating connection and thus should be in open func __sL__
-	d.client, err = weaviate.NewClient(wcfg)
+	client, err := weaviate.NewClient(wcfg)
 	if err != nil {
 		return fmt.Errorf("Error creating client: %w", err)
+	}
+
+	d.handler, err = handler.New(client, d.config.generateUUID)
+
+	if err != nil {
+		return fmt.Errorf("Error creating handler: %w}", err)
 	}
 
 	return nil
 }
 
 func (d *Destination) Open(ctx context.Context) error {
-	return nil
-}
-
-func insertRecord(ctx context.Context, record sdk.Record) error {
-	return nil
-}
-
-func updateRecord(ctx context.Context, record sdk.Record) error {
-	return nil
-}
-
-func deleteRecord(ctx context.Context, record sdk.Record) error {
 	return nil
 }
 
@@ -112,29 +107,16 @@ func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, err
 		err := sdk.Util.Destination.Route(
 			ctx,
 			record,
-			insertRecord,
-			updateRecord,
-			deleteRecord,
-			insertRecord,
+			d.handler.Insert,
+			d.handler.Update,
+			d.handler.Delete,
+			d.handler.Insert,
 		)
 
 		if err != nil {
 			return i, fmt.Errorf("Error routing %s: %w", record.Operation.String(), err)
 		}
 	}
-
-	//objects := make([]*models.Object, len(records))
-	//for i := range records {
-	//	objects[i] = &models.Object{
-	//		Class: d.Config.Class,
-	//		Properties: XXX
-	//	}
-	//}
-
-	//result, err := client.Batch().ObjectsBatcher().WithObjects(objects...).Do(context.Background())
-	//if err != nil {
-	//	return 0, nil
-	//}
 
 	return len(records), nil
 }
