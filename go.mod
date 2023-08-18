@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/conduitio/conduit-connector-sdk v0.7.2
+	github.com/google/uuid v1.3.0
 	github.com/matryer/is v1.4.1
 	github.com/weaviate/weaviate-go-client/v4 v4.9.0
 )
@@ -27,7 +28,6 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-openapi/validate v0.21.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
