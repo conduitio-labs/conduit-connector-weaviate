@@ -15,7 +15,7 @@ type Destination struct {
 	sdk.UnimplementedDestination
 
 	config DestinationConfig
-	client weaviate.Client
+	client *weaviate.Client
 }
 
 type ModuleApiKey struct {
@@ -26,6 +26,7 @@ type ModuleApiKey struct {
 type DestinationConfig struct {
 	Config
 	moduleApiKey ModuleApiKey `json:"module_api_key"`
+	generateUUID string       `json:"generate_uuid"`
 }
 
 func NewDestination() sdk.Destination {
@@ -57,18 +58,18 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	//TODO: support additional auth schemes __sL__
-	if d.config.ApiKey != nil {
-		authConfig := auth.ApiKey{Value: d.config.ApiKey}
+	if d.config.ApiKey != "" {
+		authConfig = auth.ApiKey{Value: d.config.ApiKey}
 	}
 
 	//TODO: better naming for this value __sL__
-	if d.Config.moduleApiKey != nil && d.Config.moduleApiKey.name != nil && d.Config.moduleApiKey.value != nil {
-		clientHeaders := map[string]string{
-			d.Config.moduleApiKey.name: d.Config.moduleApiKey.value,
+	if d.config.moduleApiKey.name != "" && d.config.moduleApiKey.value != "" {
+		clientHeaders = map[string]string{
+			d.config.moduleApiKey.name: d.config.moduleApiKey.value,
 		}
 	}
 
-	cfg := weaviate.Config{
+	wcfg := weaviate.Config{
 		Host:       d.config.Endpoint,
 		Scheme:     d.config.Scheme,
 		AuthConfig: authConfig,
@@ -76,7 +77,7 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	//TODO: need to look into this is actually creating connection and thus should be in open func __sL__
-	d.client, err = weaviate.NewClient(cfg)
+	d.client, err = weaviate.NewClient(wcfg)
 	if err != nil {
 		return fmt.Errorf("Error creating client: %w", err)
 	}
@@ -88,11 +89,38 @@ func (d *Destination) Open(ctx context.Context) error {
 	return nil
 }
 
+func insertRecord(ctx context.Context, record sdk.Record) error {
+	return nil
+}
+
+func updateRecord(ctx context.Context, record sdk.Record) error {
+	return nil
+}
+
+func deleteRecord(ctx context.Context, record sdk.Record) error {
+	return nil
+}
+
 func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, error) {
 	//TODO: will need differential handling of insert/update/delete __sL__
 	// weaviate has id field that is required to be UUID, if not provided it will
 	// generate one itself. Issue here is how to handle update/delete if we don't know
 	// the id.
+
+	for i, record := range records {
+		err := sdk.Util.Destination.Route(
+			ctx,
+			record,
+			insertRecord,
+			updateRecord,
+			deleteRecord,
+			insertRecord,
+		)
+
+		if err != nil {
+			return i, fmt.Errorf("Error routing %s: %w", record.Operation.String(), err)
+		}
+	}
 
 	//objects := make([]*models.Object, len(records))
 	//for i := range records {
