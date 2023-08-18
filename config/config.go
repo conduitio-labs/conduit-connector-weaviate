@@ -1,4 +1,4 @@
-package weaviate
+package config
 
 type Config struct {
 	Endpoint string `json:"endpoint" validate:"required"`

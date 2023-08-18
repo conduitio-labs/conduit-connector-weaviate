@@ -1,4 +1,4 @@
-package weaviate
+package destination
 
 //go:generate paramgen -output=paramgen_dest.go DestinationConfig
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
@@ -24,12 +25,12 @@ type ModuleApiKey struct {
 }
 
 type DestinationConfig struct {
-	Config
+	config.Config
 	moduleApiKey ModuleApiKey `json:"module_api_key"`
 	generateUUID string       `json:"generate_uuid"`
 }
 
-func NewDestination() sdk.Destination {
+func New() sdk.Destination {
 	// Create Destination and wrap it in the default middleware.
 	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
 }
