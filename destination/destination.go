@@ -27,8 +27,8 @@ type ModuleApiKey struct {
 
 type DestinationConfig struct {
 	config.Config
-	moduleApiKey ModuleApiKey `json:"module_api_key"`
-	generateUUID bool         `json:"generate_uuid"`
+	ModuleApiKey ModuleApiKey `json:"module_api_key"`
+	GenerateUUID bool         `json:"generate_uuid"`
 }
 
 func New() sdk.Destination {
@@ -65,9 +65,9 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	//TODO: better naming for this value __sL__
-	if d.config.moduleApiKey.name != "" && d.config.moduleApiKey.value != "" {
+	if d.config.ModuleApiKey.name != "" && d.config.ModuleApiKey.value != "" {
 		clientHeaders = map[string]string{
-			d.config.moduleApiKey.name: d.config.moduleApiKey.value,
+			d.config.ModuleApiKey.name: d.config.ModuleApiKey.value,
 		}
 	}
 
@@ -84,7 +84,7 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 		return fmt.Errorf("Error creating client: %w", err)
 	}
 
-	d.handler, err = handler.New(client, d.config.Class, d.config.generateUUID)
+	d.handler, err = handler.New(client, d.config.Class, d.config.GenerateUUID)
 
 	if err != nil {
 		return fmt.Errorf("Error creating handler: %w}", err)
