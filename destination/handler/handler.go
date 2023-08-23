@@ -63,6 +63,8 @@ func (h *RecordHandler) Insert(ctx context.Context, record sdk.Record) error {
 		id = recordUUID(record)
 	}
 
+	//TODO: We should handle case where "vector" is in the payload.
+	//you'd need to pull it out and add it on higher level __sL__
 	_, err = h.client.Data().Creator().
 		WithClassName(h.class).
 		WithID(id).
