@@ -4,36 +4,55 @@ package destination
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination/handler"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
-	"github.com/conduitio-labs/conduit-connector-weaviate/destination/handler"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	"github.com/weaviate/weaviate-go-client/v4/weaviate"
-	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
 )
+
+type recordHandler interface {
+	Open(DestinationConfig) error
+
+	Insert(context.Context, sdk.Record) error
+	Update(context.Context, sdk.Record) error
+	Delete(context.Context, sdk.Record) error
+}
 
 type Destination struct {
 	sdk.UnimplementedDestination
 
 	config  DestinationConfig
-	handler *handler.RecordHandler
+	handler recordHandler
 }
 
 type ModuleApiKey struct {
-	name  string
-	value string
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (m ModuleApiKey) IsValid() bool {
+	return (m.Name == "" && m.Value == "") ||
+		(m.Name != "" && m.Value != "")
 }
 
 type DestinationConfig struct {
 	config.Config
-	ModuleApiKey ModuleApiKey `json:"module_api_key"`
+	//TODO: better naming for this value __sL__
+	ModuleAPIKey ModuleApiKey `json:"module_api_key"`
 	GenerateUUID bool         `json:"generate_uuid"`
 }
 
 func New() sdk.Destination {
-	// Create Destination and wrap it in the default middleware.
-	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
+	return NewWithHandler(&handler.RecordHandler{})
+}
+
+func NewWithHandler(h recordHandler) sdk.Destination {
+	return sdk.DestinationWithMiddleware(
+		&Destination{handler: h},
+		sdk.DefaultDestinationMiddleware()...,
+	)
 }
 
 func (d *Destination) Parameters() map[string]sdk.Parameter {
@@ -41,59 +60,25 @@ func (d *Destination) Parameters() map[string]sdk.Parameter {
 }
 
 func (d *Destination) Configure(ctx context.Context, cfg map[string]string) error {
-	// Configure is the first function to be called in a connector. It provides
-	// the connector with the configuration that can be validated and stored.
-	// In case the configuration is not valid it should return an error.
-	// Testing if your connector can reach the configured data source should be
-	// done in Open, not in Configure.
-	// The SDK will validate the configuration and populate default values
-	// before calling Configure. If you need to do more complex validations you
-	// can do them manually here.
-
-	var authConfig auth.Config
-	var clientHeaders map[string]string
-
 	sdk.Logger(ctx).Info().Msg("Configuring Destination...")
 	err := sdk.Util.ParseConfig(cfg, &d.config)
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
-	//TODO: support additional auth schemes __sL__
-	if d.config.ApiKey != "" {
-		authConfig = auth.ApiKey{Value: d.config.ApiKey}
-	}
-
-	//TODO: better naming for this value __sL__
-	if d.config.ModuleApiKey.name != "" && d.config.ModuleApiKey.value != "" {
-		clientHeaders = map[string]string{
-			d.config.ModuleApiKey.name: d.config.ModuleApiKey.value,
-		}
-	}
-
-	wcfg := weaviate.Config{
-		Host:       d.config.Endpoint,
-		Scheme:     d.config.Scheme,
-		AuthConfig: authConfig,
-		Headers:    clientHeaders,
-	}
-
-	//TODO: need to look into this is actually creating connection and thus should be in open func __sL__
-	client, err := weaviate.NewClient(wcfg)
-	if err != nil {
-		return fmt.Errorf("Error creating client: %w", err)
-	}
-
-	d.handler, err = handler.New(client, d.config.Class, d.config.GenerateUUID)
-
-	if err != nil {
-		return fmt.Errorf("Error creating handler: %w}", err)
+	if !d.config.ModuleAPIKey.IsValid() {
+		return errors.New("invalid module configuration")
 	}
 
 	return nil
 }
 
-func (d *Destination) Open(ctx context.Context) error {
+func (d *Destination) Open(context.Context) error {
+	err := d.handler.Open(d.config)
+	if err != nil {
+		return fmt.Errorf("error creating handler: %w}", err)
+	}
+
 	return nil
 }
 
@@ -114,14 +99,14 @@ func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, err
 		)
 
 		if err != nil {
-			return i, fmt.Errorf("Error routing %s: %w", record.Operation.String(), err)
+			return i, fmt.Errorf("error routing %v: %w", record.Operation, err)
 		}
 	}
 
 	return len(records), nil
 }
 
-func (d *Destination) Teardown(ctx context.Context) error {
+func (d *Destination) Teardown(context.Context) error {
 	// Teardown signals to the plugin that all records were written and there
 	// will be no more calls to any other function. After Teardown returns, the
 	// plugin should be ready for a graceful shutdown.

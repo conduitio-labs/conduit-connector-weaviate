@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/data/replication"
 )
 
@@ -18,40 +19,36 @@ type RecordHandler struct {
 	generateUUID bool
 }
 
-func New(client *weaviate.Client, class string, genUUID bool) (*RecordHandler, error) {
-	handler := &RecordHandler{
-		client:       client,
-		class:        class,
-		generateUUID: genUUID,
+func (h *RecordHandler) Open(config destination.DestinationConfig) error {
+	authConfig := auth.ApiKey{Value: config.APIKey}
+	var clientHeaders map[string]string
+
+	if config.ModuleAPIKey.IsValid() {
+		clientHeaders = map[string]string{
+			config.ModuleAPIKey.Name: config.ModuleAPIKey.Value,
+		}
 	}
 
-	return handler, nil
-}
-
-func recordUUID(record sdk.Record) string {
-	key := record.Key.Bytes()
-	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
-}
-
-func recordProperties(record sdk.Record) (sdk.StructuredData, error) {
-	data := record.Payload.After
-
-	if data == nil || len(data.Bytes()) == 0 {
-		return nil, errors.New("Empty payload")
+	wcfg := weaviate.Config{
+		Host:       config.Endpoint,
+		Scheme:     config.Scheme,
+		AuthConfig: authConfig,
+		Headers:    clientHeaders,
 	}
 
-	properties := make(sdk.StructuredData)
-	err := json.Unmarshal(data.Bytes(), &properties)
-
+	client, err := weaviate.NewClient(wcfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal data to structured data: %w", err)
+		return fmt.Errorf("error creating client: %w", err)
 	}
 
-	return properties, nil
+	h.client = client
+	h.class = config.Class
+	h.generateUUID = config.GenerateUUID
+
+	return nil
 }
 
 func (h *RecordHandler) Insert(ctx context.Context, record sdk.Record) error {
-
 	properties, err := recordProperties(record)
 
 	if err != nil {
@@ -124,4 +121,26 @@ func (h *RecordHandler) Delete(ctx context.Context, record sdk.Record) error {
 	}
 
 	return nil
+}
+
+func recordUUID(record sdk.Record) string {
+	key := record.Key.Bytes()
+	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
+}
+
+func recordProperties(record sdk.Record) (sdk.StructuredData, error) {
+	data := record.Payload.After
+
+	if data == nil || len(data.Bytes()) == 0 {
+		return nil, errors.New("Empty payload")
+	}
+
+	properties := make(sdk.StructuredData)
+	err := json.Unmarshal(data.Bytes(), &properties)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal data to structured data: %w", err)
+	}
+
+	return properties, nil
 }

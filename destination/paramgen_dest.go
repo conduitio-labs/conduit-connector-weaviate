@@ -39,6 +39,18 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 			Type:        sdk.ParameterTypeBool,
 			Validations: []sdk.Validation{},
 		},
+		"module_api_key.name": {
+			Default:     "",
+			Description: "",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
+		"module_api_key.value": {
+			Default:     "",
+			Description: "",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
 		"scheme": {
 			Default:     "",
 			Description: "",
