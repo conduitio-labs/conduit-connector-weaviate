@@ -133,7 +133,13 @@ func (d *Destination) update(ctx context.Context, record sdk.Record) error {
 }
 
 func (d *Destination) delete(ctx context.Context, record sdk.Record) error {
-	return d.client.Delete(ctx, &weaviate.Object{ID: d.recordUUID(record)})
+	return d.client.Delete(
+		ctx,
+		&weaviate.Object{
+			ID:    d.recordUUID(record),
+			Class: d.config.Class,
+		},
+	)
 }
 
 func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error) {

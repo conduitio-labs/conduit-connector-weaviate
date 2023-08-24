@@ -17,12 +17,10 @@ type Object struct {
 }
 
 type Client struct {
-	client       *weaviate.Client
-	class        string
-	generateUUID bool
+	client *weaviate.Client
 }
 
-func (h *Client) Open(config destination.DestinationConfig) error {
+func (c *Client) Open(config destination.DestinationConfig) error {
 	authConfig := auth.ApiKey{Value: config.APIKey}
 	var clientHeaders map[string]string
 
@@ -44,17 +42,15 @@ func (h *Client) Open(config destination.DestinationConfig) error {
 		return fmt.Errorf("error creating client: %w", err)
 	}
 
-	h.client = client
-	h.class = config.Class
-	h.generateUUID = config.GenerateUUID
+	c.client = client
 
 	return nil
 }
 
-func (h *Client) Insert(ctx context.Context, obj *Object) error {
+func (c *Client) Insert(ctx context.Context, obj *Object) error {
 	//TODO: We should handle case where "vector" is in the payload.
 	//you'd need to pull it out and add it on higher level __sL__
-	_, err := h.client.Data().Creator().
+	_, err := c.client.Data().Creator().
 		WithClassName(obj.Class).
 		WithID(obj.ID).
 		WithProperties(obj.Properties).
@@ -68,8 +64,8 @@ func (h *Client) Insert(ctx context.Context, obj *Object) error {
 	return nil
 }
 
-func (h *Client) Update(ctx context.Context, obj *Object) error {
-	err := h.client.Data().Updater().
+func (c *Client) Update(ctx context.Context, obj *Object) error {
+	err := c.client.Data().Updater().
 		WithID(obj.ID).
 		WithClassName(obj.Class).
 		WithProperties(obj.Properties).
@@ -83,9 +79,9 @@ func (h *Client) Update(ctx context.Context, obj *Object) error {
 	return nil
 }
 
-func (h *Client) Delete(ctx context.Context, obj *Object) error {
-	err := h.client.Data().Deleter().
-		WithClassName(h.class).
+func (c *Client) Delete(ctx context.Context, obj *Object) error {
+	err := c.client.Data().Deleter().
+		WithClassName(obj.Class).
 		WithID(obj.ID).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
