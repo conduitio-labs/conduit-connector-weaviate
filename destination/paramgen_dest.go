@@ -13,7 +13,9 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 			Default:     "",
 			Description: "",
 			Type:        sdk.ParameterTypeString,
-			Validations: []sdk.Validation{},
+			Validations: []sdk.Validation{
+				sdk.ValidationRequired{},
+			},
 		},
 		"class": {
 			Default:     "",
