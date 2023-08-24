@@ -4,27 +4,28 @@ package destination
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/conduitio-labs/conduit-connector-weaviate/destination/handler"
-
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/google/uuid"
 )
 
-type recordHandler interface {
+type weaviateClient interface {
 	Open(DestinationConfig) error
 
-	Insert(context.Context, sdk.Record) error
-	Update(context.Context, sdk.Record) error
-	Delete(context.Context, sdk.Record) error
+	Insert(context.Context, *weaviate.Object) error
+	Update(context.Context, *weaviate.Object) error
+	Delete(context.Context, *weaviate.Object) error
 }
 
 type Destination struct {
 	sdk.UnimplementedDestination
 
-	config  DestinationConfig
-	handler recordHandler
+	config DestinationConfig
+	client weaviateClient
 }
 
 type ModuleApiKey struct {
@@ -45,12 +46,12 @@ type DestinationConfig struct {
 }
 
 func New() sdk.Destination {
-	return NewWithHandler(&handler.RecordHandler{})
+	return NewWithClient(&weaviate.Client{})
 }
 
-func NewWithHandler(h recordHandler) sdk.Destination {
+func NewWithClient(client weaviateClient) sdk.Destination {
 	return sdk.DestinationWithMiddleware(
-		&Destination{handler: h},
+		&Destination{client: client},
 		sdk.DefaultDestinationMiddleware()...,
 	)
 }
@@ -74,9 +75,9 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 }
 
 func (d *Destination) Open(context.Context) error {
-	err := d.handler.Open(d.config)
+	err := d.client.Open(d.config)
 	if err != nil {
-		return fmt.Errorf("error creating handler: %w}", err)
+		return fmt.Errorf("error creating client: %w}", err)
 	}
 
 	return nil
@@ -92,10 +93,10 @@ func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, err
 		err := sdk.Util.Destination.Route(
 			ctx,
 			record,
-			d.handler.Insert,
-			d.handler.Update,
-			d.handler.Delete,
-			d.handler.Insert,
+			d.insert,
+			d.update,
+			d.delete,
+			d.insert,
 		)
 
 		if err != nil {
@@ -111,4 +112,65 @@ func (d *Destination) Teardown(context.Context) error {
 	// will be no more calls to any other function. After Teardown returns, the
 	// plugin should be ready for a graceful shutdown.
 	return nil
+}
+
+func (d *Destination) insert(ctx context.Context, record sdk.Record) error {
+	obj, err := d.toWeaviateObj(record)
+	if err != nil {
+		return fmt.Errorf("error creating Weaviate object: %w", err)
+	}
+
+	return d.client.Insert(ctx, obj)
+}
+
+func (d *Destination) update(ctx context.Context, record sdk.Record) error {
+	obj, err := d.toWeaviateObj(record)
+	if err != nil {
+		return fmt.Errorf("error creating Weaviate object: %w", err)
+	}
+
+	return d.client.Update(ctx, obj)
+}
+
+func (d *Destination) delete(ctx context.Context, record sdk.Record) error {
+	return d.client.Delete(ctx, &weaviate.Object{ID: d.recordUUID(record)})
+}
+
+func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error) {
+	properties, err := d.recordProperties(record)
+
+	if err != nil {
+		return nil, fmt.Errorf("update property conversion: %w", err)
+	}
+
+	return &weaviate.Object{
+		ID:         d.recordUUID(record),
+		Class:      "",
+		Properties: properties,
+	}, nil
+}
+
+func (d *Destination) recordUUID(record sdk.Record) string {
+	key := record.Key.Bytes()
+	if !d.config.GenerateUUID {
+		return string(key)
+	}
+	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
+}
+
+func (d *Destination) recordProperties(record sdk.Record) (sdk.StructuredData, error) {
+	data := record.Payload.After
+
+	if data == nil || len(data.Bytes()) == 0 {
+		return nil, errors.New("Empty payload")
+	}
+
+	properties := make(sdk.StructuredData)
+	err := json.Unmarshal(data.Bytes(), &properties)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal data to structured data: %w", err)
+	}
+
+	return properties, nil
 }
