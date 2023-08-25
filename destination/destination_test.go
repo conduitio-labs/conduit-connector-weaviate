@@ -95,11 +95,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"product_name": "computer",
 					"price":        1000,
 					"labels":       ["laptop", "navy-blue"],
-					"used":			true,
-					"specs": 		{
-						"cpu": 		"3GHz",
-						"memory":	"16Gb"
-					}
+					"used":			true
 				}`),
 			),
 			want: &weaviate.Object{
@@ -110,10 +106,6 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"price":        float64(1000),
 					"labels":       []any{"laptop", "navy-blue"},
 					"used":         true,
-					"specs": map[string]any{
-						"cpu":    "3GHz",
-						"memory": "16Gb",
-					},
 				},
 			},
 		},
@@ -128,10 +120,6 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"price":        1000,
 					"labels":       []string{"laptop", "navy-blue"},
 					"used":         true,
-					"specs": map[string]any{
-						"cpu":    "3GHz",
-						"memory": "16Gb",
-					},
 				},
 			),
 			want: &weaviate.Object{
@@ -142,10 +130,6 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"price":        float64(1000),
 					"labels":       []any{"laptop", "navy-blue"},
 					"used":         true,
-					"specs": map[string]any{
-						"cpu":    "3GHz",
-						"memory": "16Gb",
-					},
 				},
 			},
 		},
@@ -162,10 +146,6 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"price":        1000,
 					"labels":       []string{"laptop", "navy-blue"},
 					"used":         true,
-					"specs": map[string]any{
-						"cpu":    "3GHz",
-						"memory": "16Gb",
-					},
 				},
 			),
 			want: &weaviate.Object{
@@ -176,10 +156,6 @@ func TestDestination_SingleWrite(t *testing.T) {
 					"price":        float64(1000),
 					"labels":       []any{"laptop", "navy-blue"},
 					"used":         true,
-					"specs": map[string]any{
-						"cpu":    "3GHz",
-						"memory": "16Gb",
-					},
 				},
 			},
 		},

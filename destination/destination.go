@@ -175,14 +175,14 @@ func (d *Destination) recordUUID(record sdk.Record) string {
 	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
 }
 
-func (d *Destination) recordProperties(record sdk.Record) (sdk.StructuredData, error) {
+func (d *Destination) recordProperties(record sdk.Record) (map[string]interface{}, error) {
 	data := record.Payload.After
 
 	if data == nil || len(data.Bytes()) == 0 {
 		return nil, errors.New("empty payload")
 	}
 
-	properties := make(sdk.StructuredData)
+	properties := make(map[string]interface{})
 	err := json.Unmarshal(data.Bytes(), &properties)
 
 	if err != nil {
