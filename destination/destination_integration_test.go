@@ -27,6 +27,8 @@ import (
 )
 
 func TestDestination_Integration_Insert(t *testing.T) {
+	integrationTest(t)
+
 	is := is.New(t)
 	openAIKey := os.Getenv("OPENAI_APIKEY")
 	is.True(openAIKey != "") // expected OPENAI_APIKEY to be set
@@ -101,4 +103,11 @@ func newWeaviateClient(cfg map[string]string) (*weaviate.Client, error) {
 	}
 
 	return weaviate.NewClient(wcfg)
+}
+
+func integrationTest(t *testing.T) {
+	t.Helper()
+	if os.Getenv("RUN_INTEGRATION_TESTS") == "" {
+		t.Skip("skipping integration tests, set environment variable RUN_INTEGRATION_TESTS")
+	}
 }
