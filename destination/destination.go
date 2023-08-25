@@ -1,39 +1,64 @@
 package destination
 
 //go:generate paramgen -output=paramgen_dest.go DestinationConfig
+//go:generate mockgen -source=destination.go -package=mock -destination=mock/client_mock.go -mock_names=weaviateClient=WeaviateClient . weaviateClient
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
-	"github.com/conduitio-labs/conduit-connector-weaviate/destination/handler"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	"github.com/weaviate/weaviate-go-client/v4/weaviate"
-	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
+	"github.com/google/uuid"
 )
+
+var (
+	metadataClass = "weaviate.class"
+)
+
+type weaviateClient interface {
+	Open(weaviate.Config) error
+
+	Insert(context.Context, *weaviate.Object) error
+	Update(context.Context, *weaviate.Object) error
+	Delete(context.Context, *weaviate.Object) error
+}
 
 type Destination struct {
 	sdk.UnimplementedDestination
 
-	config  DestinationConfig
-	handler *handler.RecordHandler
+	config DestinationConfig
+	client weaviateClient
 }
 
 type ModuleApiKey struct {
-	name  string
-	value string
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (m ModuleApiKey) IsValid() bool {
+	return (m.Name == "" && m.Value == "") ||
+		(m.Name != "" && m.Value != "")
 }
 
 type DestinationConfig struct {
 	config.Config
-	ModuleApiKey ModuleApiKey `json:"module_api_key"`
-	GenerateUUID bool         `json:"generate_uuid"`
+	//TODO: better naming for this value __sL__
+	ModuleAPIKey ModuleApiKey `json:"moduleAPIKey"`
+	GenerateUUID bool         `json:"generateUUID"`
 }
 
 func New() sdk.Destination {
-	// Create Destination and wrap it in the default middleware.
-	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
+	return NewWithClient(&weaviate.Client{})
+}
+
+func NewWithClient(client weaviateClient) sdk.Destination {
+	return sdk.DestinationWithMiddleware(
+		&Destination{client: client},
+		sdk.DefaultDestinationMiddleware()...,
+	)
 }
 
 func (d *Destination) Parameters() map[string]sdk.Parameter {
@@ -41,59 +66,25 @@ func (d *Destination) Parameters() map[string]sdk.Parameter {
 }
 
 func (d *Destination) Configure(ctx context.Context, cfg map[string]string) error {
-	// Configure is the first function to be called in a connector. It provides
-	// the connector with the configuration that can be validated and stored.
-	// In case the configuration is not valid it should return an error.
-	// Testing if your connector can reach the configured data source should be
-	// done in Open, not in Configure.
-	// The SDK will validate the configuration and populate default values
-	// before calling Configure. If you need to do more complex validations you
-	// can do them manually here.
-
-	var authConfig auth.Config
-	var clientHeaders map[string]string
-
 	sdk.Logger(ctx).Info().Msg("Configuring Destination...")
 	err := sdk.Util.ParseConfig(cfg, &d.config)
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
-	//TODO: support additional auth schemes __sL__
-	if d.config.ApiKey != "" {
-		authConfig = auth.ApiKey{Value: d.config.ApiKey}
-	}
-
-	//TODO: better naming for this value __sL__
-	if d.config.ModuleApiKey.name != "" && d.config.ModuleApiKey.value != "" {
-		clientHeaders = map[string]string{
-			d.config.ModuleApiKey.name: d.config.ModuleApiKey.value,
-		}
-	}
-
-	wcfg := weaviate.Config{
-		Host:       d.config.Endpoint,
-		Scheme:     d.config.Scheme,
-		AuthConfig: authConfig,
-		Headers:    clientHeaders,
-	}
-
-	//TODO: need to look into this is actually creating connection and thus should be in open func __sL__
-	client, err := weaviate.NewClient(wcfg)
-	if err != nil {
-		return fmt.Errorf("Error creating client: %w", err)
-	}
-
-	d.handler, err = handler.New(client, d.config.Class, d.config.GenerateUUID)
-
-	if err != nil {
-		return fmt.Errorf("Error creating handler: %w}", err)
+	if !d.config.ModuleAPIKey.IsValid() {
+		return errors.New("invalid module configuration")
 	}
 
 	return nil
 }
 
-func (d *Destination) Open(ctx context.Context) error {
+func (d *Destination) Open(context.Context) error {
+	err := d.client.Open(d.weaviateConfig())
+	if err != nil {
+		return fmt.Errorf("error creating client: %w}", err)
+	}
+
 	return nil
 }
 
@@ -107,23 +98,111 @@ func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, err
 		err := sdk.Util.Destination.Route(
 			ctx,
 			record,
-			d.handler.Insert,
-			d.handler.Update,
-			d.handler.Delete,
-			d.handler.Insert,
+			d.insert,
+			d.update,
+			d.delete,
+			d.insert,
 		)
 
 		if err != nil {
-			return i, fmt.Errorf("Error routing %s: %w", record.Operation.String(), err)
+			return i, fmt.Errorf("error routing %v: %w", record.Operation, err)
 		}
 	}
 
 	return len(records), nil
 }
 
-func (d *Destination) Teardown(ctx context.Context) error {
+func (d *Destination) Teardown(context.Context) error {
 	// Teardown signals to the plugin that all records were written and there
 	// will be no more calls to any other function. After Teardown returns, the
 	// plugin should be ready for a graceful shutdown.
 	return nil
+}
+
+func (d *Destination) insert(ctx context.Context, record sdk.Record) error {
+	obj, err := d.toWeaviateObj(record)
+	if err != nil {
+		return fmt.Errorf("error creating Weaviate object: %w", err)
+	}
+
+	return d.client.Insert(ctx, obj)
+}
+
+func (d *Destination) update(ctx context.Context, record sdk.Record) error {
+	obj, err := d.toWeaviateObj(record)
+	if err != nil {
+		return fmt.Errorf("error creating Weaviate object: %w", err)
+	}
+
+	return d.client.Update(ctx, obj)
+}
+
+func (d *Destination) delete(ctx context.Context, record sdk.Record) error {
+	return d.client.Delete(
+		ctx,
+		&weaviate.Object{
+			ID:    d.recordUUID(record),
+			Class: d.config.Class,
+		},
+	)
+}
+
+func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error) {
+	properties, err := d.recordProperties(record)
+
+	if err != nil {
+		return nil, fmt.Errorf("update property conversion: %w", err)
+	}
+
+	class := d.config.Class
+	if record.Metadata != nil && record.Metadata[metadataClass] != "" {
+		class = record.Metadata[metadataClass]
+	}
+
+	return &weaviate.Object{
+		ID:         d.recordUUID(record),
+		Class:      class,
+		Properties: properties,
+	}, nil
+}
+
+func (d *Destination) recordUUID(record sdk.Record) string {
+	key := record.Key.Bytes()
+	if !d.config.GenerateUUID {
+		return string(key)
+	}
+	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
+}
+
+func (d *Destination) recordProperties(record sdk.Record) (sdk.StructuredData, error) {
+	data := record.Payload.After
+
+	if data == nil || len(data.Bytes()) == 0 {
+		return nil, errors.New("empty payload")
+	}
+
+	properties := make(sdk.StructuredData)
+	err := json.Unmarshal(data.Bytes(), &properties)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal payload to structured data: %w", err)
+	}
+
+	return properties, nil
+}
+
+func (d *Destination) weaviateConfig() weaviate.Config {
+	var headers map[string]string
+	if d.config.ModuleAPIKey.IsValid() {
+		headers = map[string]string{
+			d.config.ModuleAPIKey.Name: d.config.ModuleAPIKey.Value,
+		}
+	}
+
+	return weaviate.Config{
+		APIKey:   d.config.APIKey,
+		Endpoint: d.config.Endpoint,
+		Scheme:   d.config.Scheme,
+		Headers:  headers,
+	}
 }
