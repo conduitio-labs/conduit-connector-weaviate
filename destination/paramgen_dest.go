@@ -9,9 +9,9 @@ import (
 
 func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
-		"api_key": {
+		"apiKey": {
 			Default:     "",
-			Description: "",
+			Description: "TODO: support additional auth schemes __sL__",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{
 				sdk.ValidationRequired{},
@@ -33,19 +33,19 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 				sdk.ValidationRequired{},
 			},
 		},
-		"generate_uuid": {
+		"generateUUID": {
 			Default:     "",
 			Description: "",
 			Type:        sdk.ParameterTypeBool,
 			Validations: []sdk.Validation{},
 		},
-		"module_api_key.name": {
+		"moduleAPIKey.name": {
 			Default:     "",
 			Description: "",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
-		"module_api_key.value": {
+		"moduleAPIKey.value": {
 			Default:     "",
 			Description: "",
 			Type:        sdk.ParameterTypeString,

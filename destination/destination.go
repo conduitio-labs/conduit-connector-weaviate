@@ -1,6 +1,7 @@
 package destination
 
 //go:generate paramgen -output=paramgen_dest.go DestinationConfig
+//go:generate mockgen -source=destination.go -package=mock -destination=mock/client_mock.go -mock_names=weaviateClient=WeaviateClient . weaviateClient
 
 import (
 	"context"
@@ -13,8 +14,12 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	metadataClass = "weaviate.class"
+)
+
 type weaviateClient interface {
-	Open(DestinationConfig) error
+	Open(weaviate.Config) error
 
 	Insert(context.Context, *weaviate.Object) error
 	Update(context.Context, *weaviate.Object) error
@@ -41,8 +46,8 @@ func (m ModuleApiKey) IsValid() bool {
 type DestinationConfig struct {
 	config.Config
 	//TODO: better naming for this value __sL__
-	ModuleAPIKey ModuleApiKey `json:"module_api_key"`
-	GenerateUUID bool         `json:"generate_uuid"`
+	ModuleAPIKey ModuleApiKey `json:"moduleAPIKey"`
+	GenerateUUID bool         `json:"generateUUID"`
 }
 
 func New() sdk.Destination {
@@ -75,7 +80,7 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 }
 
 func (d *Destination) Open(context.Context) error {
-	err := d.client.Open(d.config)
+	err := d.client.Open(d.weaviateConfig())
 	if err != nil {
 		return fmt.Errorf("error creating client: %w}", err)
 	}
@@ -149,9 +154,14 @@ func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error)
 		return nil, fmt.Errorf("update property conversion: %w", err)
 	}
 
+	class := d.config.Class
+	if record.Metadata != nil && record.Metadata[metadataClass] != "" {
+		class = record.Metadata[metadataClass]
+	}
+
 	return &weaviate.Object{
 		ID:         d.recordUUID(record),
-		Class:      "",
+		Class:      class,
 		Properties: properties,
 	}, nil
 }
@@ -168,15 +178,31 @@ func (d *Destination) recordProperties(record sdk.Record) (sdk.StructuredData, e
 	data := record.Payload.After
 
 	if data == nil || len(data.Bytes()) == 0 {
-		return nil, errors.New("Empty payload")
+		return nil, errors.New("empty payload")
 	}
 
 	properties := make(sdk.StructuredData)
 	err := json.Unmarshal(data.Bytes(), &properties)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal data to structured data: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal payload to structured data: %w", err)
 	}
 
 	return properties, nil
+}
+
+func (d *Destination) weaviateConfig() weaviate.Config {
+	var headers map[string]string
+	if d.config.ModuleAPIKey.IsValid() {
+		headers = map[string]string{
+			d.config.ModuleAPIKey.Name: d.config.ModuleAPIKey.Value,
+		}
+	}
+
+	return weaviate.Config{
+		APIKey:   d.config.APIKey,
+		Endpoint: d.config.Endpoint,
+		Scheme:   d.config.Scheme,
+		Headers:  headers,
+	}
 }

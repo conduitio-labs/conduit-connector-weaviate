@@ -1,11 +1,16 @@
-.PHONY: build test test-integration generate install-paramgen
+.PHONY: build test test-integration generate install-paramgen install-mocken
 
-VERSION=$(shell git describe --tags --dirty --always)
+VERSION				=  $(shell git describe --tags --dirty --always)
+MOCKGEN_VERSION		?= v0.2.0
+PARAMGEN_VERSION	?= v0.7.2
 
 build:
 	go build -ldflags "-X 'github.com/conduitio-labs/conduit-connector-weaviate.version=${VERSION}'" -o conduit-connector-weaviate cmd/connector/main.go
 
-test:
+install-mocken:
+	go install go.uber.org/mock/mockgen@$(MOCKGEN_VERSION)
+
+test: generate
 	go test $(GOTEST_FLAGS) -race ./...
 
 test-integration:
@@ -15,8 +20,8 @@ test-integration:
 		docker compose -f test/docker-compose.yml down; \
 		exit $$ret
 
-generate:
+generate: install-mocken install-paramgen
 	go generate ./...
 
 install-paramgen:
-	go install github.com/conduitio/conduit-connector-sdk/cmd/paramgen@latest
+	go install github.com/conduitio/conduit-connector-sdk/cmd/paramgen@$(PARAMGEN_VERSION)

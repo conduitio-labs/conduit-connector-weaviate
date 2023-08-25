@@ -4,11 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/data/replication"
 )
+
+type Config struct {
+	APIKey   string
+	Endpoint string
+	Scheme   string
+	Headers  map[string]string
+}
 
 type Object struct {
 	ID         string
@@ -20,21 +26,14 @@ type Client struct {
 	client *weaviate.Client
 }
 
-func (c *Client) Open(config destination.DestinationConfig) error {
+func (c *Client) Open(config Config) error {
 	authConfig := auth.ApiKey{Value: config.APIKey}
-	var clientHeaders map[string]string
-
-	if config.ModuleAPIKey.IsValid() {
-		clientHeaders = map[string]string{
-			config.ModuleAPIKey.Name: config.ModuleAPIKey.Value,
-		}
-	}
 
 	wcfg := weaviate.Config{
 		Host:       config.Endpoint,
 		Scheme:     config.Scheme,
 		AuthConfig: authConfig,
-		Headers:    clientHeaders,
+		Headers:    config.Headers,
 	}
 
 	client, err := weaviate.NewClient(wcfg)
