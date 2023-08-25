@@ -62,9 +62,9 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	is.NoErr(err)
 
 	id := "f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"
-	payload := map[string]any{
+	want := map[string]any{
 		"product_name": "computer",
-		"price":        float64(1000),
+		"price":        220.15,
 		"labels":       []string{"laptop", "navy-blue"},
 		"used":         true,
 	}
@@ -72,7 +72,7 @@ func TestDestination_Integration_Insert(t *testing.T) {
 		sdk.Position("test-position"),
 		map[string]string{},
 		sdk.RawData(id),
-		sdk.StructuredData(payload),
+		sdk.StructuredData(want),
 	)
 
 	n, err := underTest.Write(ctx, []sdk.Record{rec})
@@ -88,9 +88,25 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	is.Equal(1, len(objects))
 
 	obj := objects[0]
-	objProps, ok := obj.Properties.(map[string]any)
+	got, ok := obj.Properties.(map[string]any)
 	is.True(ok) // expected object properties to be a map[string]any
-	is.Equal(payload, objProps)
+	is.Equal(len(want), len(got))
+	for k, v := range want {
+		if k != "labels" {
+			is.Equal(v, got[k])
+			continue
+		}
+
+		gotLabels, ok := got["labels"].([]any)
+		is.True(ok) // expected `labels` to be a slice
+
+		wantLabels, ok := v.([]string)
+		is.True(ok) // expected `labels` to be a slice
+
+		for i, l := range wantLabels {
+			is.Equal(l, gotLabels[i])
+		}
+	}
 }
 
 func newWeaviateClient(cfg map[string]string) (*weaviate.Client, error) {
