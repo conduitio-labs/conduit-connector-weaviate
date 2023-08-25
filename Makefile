@@ -3,6 +3,7 @@
 VERSION				=  $(shell git describe --tags --dirty --always)
 MOCKGEN_VERSION		?= v0.2.0
 PARAMGEN_VERSION	?= v0.7.2
+GOLANG_CI_LINT_VER	:= v1.54.2
 
 build:
 	go build -ldflags "-X 'github.com/conduitio-labs/conduit-connector-weaviate.version=${VERSION}'" -o conduit-connector-weaviate cmd/connector/main.go
@@ -25,3 +26,12 @@ generate: install-mocken install-paramgen
 
 install-paramgen:
 	go install github.com/conduitio/conduit-connector-sdk/cmd/paramgen@$(PARAMGEN_VERSION)
+
+
+.PHONY: install-golangci-lint
+install-golangci-lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANG_CI_LINT_VER)
+
+.PHONY: lint
+lint: install-golangci-lint
+	golangci-lint run -v

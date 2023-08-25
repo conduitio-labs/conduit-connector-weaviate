@@ -48,7 +48,7 @@ func (c *Client) Open(config Config) error {
 
 func (c *Client) Insert(ctx context.Context, obj *Object) error {
 	//TODO: We should handle case where "vector" is in the payload.
-	//you'd need to pull it out and add it on higher level __sL__
+	// you'd need to pull it out and add it on higher level __sL__
 	_, err := c.client.Data().Creator().
 		WithClassName(obj.Class).
 		WithID(obj.ID).

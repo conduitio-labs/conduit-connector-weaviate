@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
@@ -33,12 +34,12 @@ type Destination struct {
 	client weaviateClient
 }
 
-type ModuleApiKey struct {
+type ModuleAPIKey struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-func (m ModuleApiKey) IsValid() bool {
+func (m ModuleAPIKey) IsValid() bool {
 	return (m.Name == "" && m.Value == "") ||
 		(m.Name != "" && m.Value != "")
 }
@@ -46,7 +47,7 @@ func (m ModuleApiKey) IsValid() bool {
 type DestinationConfig struct {
 	config.Config
 	//TODO: better naming for this value __sL__
-	ModuleAPIKey ModuleApiKey `json:"moduleAPIKey"`
+	ModuleAPIKey ModuleAPIKey `json:"moduleAPIKey"`
 	GenerateUUID bool         `json:"generateUUID"`
 }
 

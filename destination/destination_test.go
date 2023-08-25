@@ -3,13 +3,13 @@ package destination
 import (
 	"context"
 	"fmt"
-	"github.com/conduitio-labs/conduit-connector-weaviate/destination/mock"
-	"github.com/google/go-cmp/cmp"
 	"strings"
 	"testing"
 
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination/mock"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/google/go-cmp/cmp"
 	"github.com/matryer/is"
 	"go.uber.org/mock/gomock"
 )
@@ -66,7 +66,6 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 
 	// setupTest is doing the basic checks
 	_, _ = setupTest(t, ctx, cfg)
-
 }
 func TestDestination_SingleWrite(t *testing.T) {
 	is := is.New(t)
