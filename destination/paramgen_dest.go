@@ -13,9 +13,7 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 			Default:     "",
 			Description: "TODO: support additional auth schemes __sL__",
 			Type:        sdk.ParameterTypeString,
-			Validations: []sdk.Validation{
-				sdk.ValidationRequired{},
-			},
+			Validations: []sdk.Validation{},
 		},
 		"class": {
 			Default:     "",
