@@ -22,6 +22,5 @@ jobs:
 
       - name: Integration tests
         env:
-          RUN_INTEGRATION_TESTS: true
           OPENAI_APIKEY: ${{ secrets.OPENAI_APIKEY }}
         run: make test-integration GOTEST_FLAGS="-v -count=1"
