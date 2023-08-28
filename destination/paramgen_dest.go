@@ -11,13 +11,13 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
 		"apiKey": {
 			Default:     "",
-			Description: "TODO: support additional auth schemes __sL__",
+			Description: "A Weaviate API key",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
 		"class": {
 			Default:     "",
-			Description: "",
+			Description: "The class name as defined in the schema. A record will be saved under this class unless it has the `weaviate.class` metadata field.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{
 				sdk.ValidationRequired{},
@@ -25,7 +25,7 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 		},
 		"endpoint": {
 			Default:     "",
-			Description: "",
+			Description: "Host of the Weaviate instance.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{
 				sdk.ValidationRequired{},
@@ -50,11 +50,11 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 			Validations: []sdk.Validation{},
 		},
 		"scheme": {
-			Default:     "",
-			Description: "",
+			Default:     "https",
+			Description: "scheme of the Weaviate instance.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{
-				sdk.ValidationRequired{},
+				sdk.ValidationInclusion{List: []string{"http", "https"}},
 			},
 		},
 	}

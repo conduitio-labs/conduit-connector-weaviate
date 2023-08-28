@@ -200,7 +200,7 @@ func TestDestination_Integration_Delete(t *testing.T) {
 		"class":              class,
 		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
 		"moduleAPIKey.value": openAIKey,
-		"generateUUID":       "true",
+		"generateUUID":       "id",
 	}
 
 	client, err := newWeaviateClient(cfg)
