@@ -35,7 +35,9 @@ type Destination struct {
 }
 
 type ModuleHeader struct {
-	Name  string `json:"name"`
+	// Name of the header configuring a module (e.g. `X-OpenAI-Api-Key`)
+	Name string `json:"name"`
+	// Value for header given in `moduleHeader.name`.
 	Value string `json:"value"`
 }
 
@@ -47,8 +49,15 @@ func (m ModuleHeader) IsValid() bool {
 type DestinationConfig struct {
 	config.Config
 	//TODO: better naming for this value __sL__
+	// Vectorizers which can be configured client side
+	// mostly require an API key only.
+	// However, OpenAI can also be configured with an organization
+	// via the X-OpenAI-Organization header.
+
 	ModuleHeader ModuleHeader `json:"moduleHeader"`
-	GenerateUUID bool         `json:"generateUUID"`
+	// Whether a UUID for records should be automatically generated.
+	// The generated UUIDs are MD5 sums of record keys.
+	GenerateUUID bool `json:"generateUUID"`
 }
 
 func New() sdk.Destination {

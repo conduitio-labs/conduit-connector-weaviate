@@ -8,6 +8,7 @@ type Config struct {
 	Scheme string `json:"scheme" default:"https" validate:"inclusion=http|https"`
 
 	//TODO: support additional auth schemes __sL__
+	// https://github.com/conduitio-labs/conduit-connector-weaviate/issues/4
 
 	// A Weaviate API key
 	APIKey string `json:"apiKey"`

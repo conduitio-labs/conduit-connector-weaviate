@@ -33,19 +33,19 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 		},
 		"generateUUID": {
 			Default:     "",
-			Description: "",
+			Description: "Whether a UUID for records should be automatically generated. The generated UUIDs are MD5 sums of record keys.",
 			Type:        sdk.ParameterTypeBool,
 			Validations: []sdk.Validation{},
 		},
 		"moduleHeader.name": {
 			Default:     "",
-			Description: "",
+			Description: "name of the header configuring a module (e.g. `X-OpenAI-Api-Key`)",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
 		"moduleHeader.value": {
 			Default:     "",
-			Description: "",
+			Description: "value for header given in `moduleHeader.name`.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
