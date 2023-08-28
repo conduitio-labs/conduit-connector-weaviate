@@ -20,6 +20,7 @@ type Object struct {
 	ID         string
 	Class      string
 	Properties map[string]interface{}
+	Vector     []float32
 }
 
 type Client struct {
@@ -54,6 +55,7 @@ func (c *Client) Insert(ctx context.Context, obj *Object) error {
 		WithClassName(obj.Class).
 		WithID(obj.ID).
 		WithProperties(obj.Properties).
+		WithVector(obj.Vector).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
 

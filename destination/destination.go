@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
@@ -16,7 +18,8 @@ import (
 )
 
 var (
-	metadataClass = "weaviate.class"
+	metadataClass  = "weaviate.class"
+	metadataVector = "weaviate.vector"
 )
 
 type weaviateClient interface {
@@ -164,10 +167,19 @@ func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error)
 		class = record.Metadata[metadataClass]
 	}
 
+	var vector []float32
+	if record.Metadata != nil && record.Metadata[metadataVector] != "" {
+		vector, err = d.recordVector(record.Metadata[metadataVector])
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing vector from metadata, input: %v, error: %w", record.Metadata[metadataVector], err)
+		}
+	}
+
 	return &weaviate.Object{
 		ID:         d.recordUUID(record),
 		Class:      class,
 		Properties: properties,
+		Vector:     vector,
 	}, nil
 }
 
@@ -210,4 +222,22 @@ func (d *Destination) weaviateConfig() weaviate.Config {
 		Scheme:   d.config.Scheme,
 		Headers:  headers,
 	}
+}
+
+func (d *Destination) recordVector(s string) ([]float32, error) {
+	var vector []float32
+	for _, vs := range strings.Split(s, ",") {
+		if vs == "" {
+			return nil, errors.New("got an empty string")
+		}
+
+		v, err := strconv.ParseFloat(vs, 32)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse %v: %w", vs, err)
+		}
+
+		vector = append(vector, float32(v))
+	}
+
+	return vector, nil
 }
