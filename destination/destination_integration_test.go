@@ -42,8 +42,8 @@ func TestDestination_Integration_Insert(t *testing.T) {
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
 		"class":              class,
-		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
-		"moduleAPIKey.value": openAIKey,
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": openAIKey,
 		"generateUUID":       "true",
 	}
 
@@ -110,8 +110,8 @@ func TestDestination_Integration_Update(t *testing.T) {
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
 		"class":              class,
-		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
-		"moduleAPIKey.value": openAIKey,
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": openAIKey,
 		"generateUUID":       "true",
 	}
 
@@ -198,8 +198,8 @@ func TestDestination_Integration_Delete(t *testing.T) {
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
 		"class":              class,
-		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
-		"moduleAPIKey.value": openAIKey,
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": openAIKey,
 		"generateUUID":       "true",
 	}
 
@@ -260,7 +260,7 @@ func newWeaviateClient(cfg map[string]string) (*weaviate.Client, error) {
 		Host:   "localhost:18080",
 		Scheme: "http",
 		Headers: map[string]string{
-			cfg["moduleAPIKey.name"]: cfg["moduleAPIKey.value"],
+			cfg["moduleHeader.name"]: cfg["moduleHeader.value"],
 		},
 	}
 

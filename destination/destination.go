@@ -34,12 +34,12 @@ type Destination struct {
 	client weaviateClient
 }
 
-type ModuleAPIKey struct {
+type ModuleHeader struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-func (m ModuleAPIKey) IsValid() bool {
+func (m ModuleHeader) IsValid() bool {
 	return (m.Name == "" && m.Value == "") ||
 		(m.Name != "" && m.Value != "")
 }
@@ -47,7 +47,7 @@ func (m ModuleAPIKey) IsValid() bool {
 type DestinationConfig struct {
 	config.Config
 	//TODO: better naming for this value __sL__
-	ModuleAPIKey ModuleAPIKey `json:"moduleAPIKey"`
+	ModuleHeader ModuleHeader `json:"moduleHeader"`
 	GenerateUUID bool         `json:"generateUUID"`
 }
 
@@ -73,7 +73,7 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
-	if !d.config.ModuleAPIKey.IsValid() {
+	if !d.config.ModuleHeader.IsValid() {
 		return errors.New("invalid module configuration")
 	}
 
@@ -90,11 +90,6 @@ func (d *Destination) Open(context.Context) error {
 }
 
 func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, error) {
-	//TODO: will need differential handling of insert/update/delete __sL__
-	// weaviate has id field that is required to be UUID, if not provided it will
-	// generate one itself. Issue here is how to handle update/delete if we don't know
-	// the id.
-
 	for i, record := range records {
 		err := sdk.Util.Destination.Route(
 			ctx,
@@ -194,9 +189,9 @@ func (d *Destination) recordProperties(record sdk.Record) (map[string]interface{
 
 func (d *Destination) weaviateConfig() weaviate.Config {
 	var headers map[string]string
-	if d.config.ModuleAPIKey.IsValid() {
+	if d.config.ModuleHeader.IsValid() {
 		headers = map[string]string{
-			d.config.ModuleAPIKey.Name: d.config.ModuleAPIKey.Value,
+			d.config.ModuleHeader.Name: d.config.ModuleHeader.Value,
 		}
 	}
 

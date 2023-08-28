@@ -59,8 +59,8 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 		"scheme":             "test-scheme",
 		"apiKey":             "test-api-key",
 		"class":              "test-class",
-		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
-		"moduleAPIKey.value": "test-OpenAI-Api-Key",
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": "test-OpenAI-Api-Key",
 		"generateUUID":       "true",
 	}
 
@@ -75,8 +75,8 @@ func TestDestination_SingleWrite(t *testing.T) {
 		"scheme":             "test-scheme",
 		"apiKey":             "test-api-key",
 		"class":              "test-class",
-		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
-		"moduleAPIKey.value": "test-OpenAI-Api-Key",
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": "test-OpenAI-Api-Key",
 		"generateUUID":       "false",
 	}
 
