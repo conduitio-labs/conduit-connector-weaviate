@@ -44,7 +44,7 @@ func TestDestination_Integration_Insert(t *testing.T) {
 		"class":              class,
 		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
 		"moduleAPIKey.value": openAIKey,
-		"generateUUID":       "false",
+		"generateUUID":       "true",
 	}
 
 	client, err := newWeaviateClient(cfg)
@@ -82,10 +82,11 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(1, n)
 
+	wID := uuid.NewMD5(uuid.NameSpaceOID, []byte(id)).String()
 	objects, err := client.Data().
 		ObjectsGetter().
 		WithClassName(cfg["class"]).
-		WithID(id).
+		WithID(wID).
 		Do(ctx)
 	is.NoErr(err)
 	is.Equal(1, len(objects))
@@ -111,7 +112,7 @@ func TestDestination_Integration_Update(t *testing.T) {
 		"class":              class,
 		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
 		"moduleAPIKey.value": openAIKey,
-		"generateUUID":       "false",
+		"generateUUID":       "true",
 	}
 
 	client, err := newWeaviateClient(cfg)
@@ -132,7 +133,7 @@ func TestDestination_Integration_Update(t *testing.T) {
 	is.NoErr(err)
 
 	// Insert record
-	id := uuid.NewString()
+	id := "test-id"
 	recInsert := sdk.Util.Source.NewRecordCreate(
 		sdk.Position("test-position"),
 		map[string]string{},
@@ -169,10 +170,11 @@ func TestDestination_Integration_Update(t *testing.T) {
 	is.Equal(1, n)
 
 	// Verify update
+	wID := uuid.NewMD5(uuid.NameSpaceOID, []byte(id)).String()
 	objects, err := client.Data().
 		ObjectsGetter().
 		WithClassName(cfg["class"]).
-		WithID(id).
+		WithID(wID).
 		Do(ctx)
 	is.NoErr(err)
 	is.Equal(1, len(objects))
@@ -198,7 +200,7 @@ func TestDestination_Integration_Delete(t *testing.T) {
 		"class":              class,
 		"moduleAPIKey.name":  "X-OpenAI-Api-Key",
 		"moduleAPIKey.value": openAIKey,
-		"generateUUID":       "false",
+		"generateUUID":       "true",
 	}
 
 	client, err := newWeaviateClient(cfg)
