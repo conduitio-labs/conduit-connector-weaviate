@@ -36,6 +36,28 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	openAIKey := os.Getenv("OPENAI_APIKEY")
 	is.True(openAIKey != "") // expected OPENAI_APIKEY to be set
 
+	testCases := []struct {
+		name   string
+		vector []float32
+	}{
+		{
+			name: "no vector (auto-generated)",
+		},
+		{
+			name:   "with vector",
+			vector: []float32{123.45, 678.9},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			integrationTestInsert(t, openAIKey, tc.vector)
+		})
+	}
+}
+
+func integrationTestInsert(t *testing.T, openAIKey string, wantVector []float32) {
+	is := is.New(t)
 	ctx := context.Background()
 	class := fmt.Sprintf("products_%v", time.Now().UnixMilli())
 	cfg := map[string]string{
@@ -65,7 +87,7 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	is.NoErr(err)
 
 	id := uuid.NewString()
-	want := map[string]any{
+	wantProperties := map[string]any{
 		"product_name": "computer",
 		"price":        220.15,
 		"labels":       []any{"laptop", "navy-blue"},
@@ -75,8 +97,11 @@ func TestDestination_Integration_Insert(t *testing.T) {
 		sdk.Position("test-position"),
 		map[string]string{},
 		sdk.RawData(id),
-		sdk.StructuredData(want),
+		sdk.StructuredData(wantProperties),
 	)
+	if wantVector != nil {
+		rec.Metadata[metadataVector] = toString(wantVector)
+	}
 
 	n, err := underTest.Write(ctx, []sdk.Record{rec})
 	is.NoErr(err)
@@ -87,14 +112,31 @@ func TestDestination_Integration_Insert(t *testing.T) {
 		ObjectsGetter().
 		WithClassName(cfg["class"]).
 		WithID(wID).
+		WithVector().
 		Do(ctx)
 	is.NoErr(err)
 	is.Equal(1, len(objects))
 
 	obj := objects[0]
-	got, ok := obj.Properties.(map[string]any)
+	gotProperties, ok := obj.Properties.(map[string]any)
 	is.True(ok) // expected object properties to be a map[string]any
-	is.Equal(want, got)
+	is.Equal(wantProperties, gotProperties)
+	is.True(obj.Vector != nil)
+	if wantVector != nil {
+		is.Equal(wantVector, []float32(obj.Vector))
+	}
+}
+
+func toString(floats []float32) string {
+	s := ""
+	for i, f := range floats {
+		s += fmt.Sprint(f)
+		if i < len(floats)-1 {
+			s += ","
+		}
+	}
+
+	return s
 }
 
 func TestDestination_Integration_Update(t *testing.T) {
