@@ -5,7 +5,11 @@ A [Conduit](https://conduit.io) destination connector for Weaviate.
 Run `make build` to build the connector.
 
 ## Testing
-Run `make test` to run all the unit tests. Run `make test-integration` to run the integration tests.
+To run the unit test, execute `make test`. 
+
+To run the integration tests, you need to:
+1. set the `OPENAI_APIKEY` environment variable, which stores an OpenAI API key.
+2. execute `make test-integration`.
 
 The Docker compose file at `test/docker-compose.yml` can be used to run an instance of Weaviate locally.
 
@@ -14,14 +18,9 @@ A destination connector pushes data from upstream resources to an external resou
 
 ### Configuration
 
-| name                       | description                                | required | default value |
-|----------------------------|--------------------------------------------|----------|---------------|
-| `destination_config_param` | Description of `destination_config_param`. | true     | 1000          |
-
-## Known Issues & Limitations
-* Known issue A
-* Limitation A
-
-## Planned work
-- [ ] Item A
-- [ ] Item B
+| name       | description                                                                                                                         | required | default value |
+|------------|-------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
+| `endpoint` | Host of the Weaviate instance.                                                                                                      | true     | ""            |
+| `scheme`   | Scheme of the Weaviate instance. Values: https, http.                                                                               | false    | "https"       |
+| `apiKey`   | A Weaviate API key.                                                                                                                 | false    | ""            |
+| `class`    | The class name as defined in the schema. A record will be saved under this class unless it has the `weaviate.class` metadata field. | true     | ""            |
