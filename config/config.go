@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrMultipleAuth   = errors.New("only one auth. option can be used (API key or WCS)")
+	ErrMultipleAuth   = errors.New("only one authentication option can be used (API key or WCS)")
 	ErrIncompleteAuth = errors.New("authentication info incomplete")
 )
 
