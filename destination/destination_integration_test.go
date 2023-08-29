@@ -38,14 +38,7 @@ func TestDestination_Integration_Insert(t *testing.T) {
 
 	ctx := context.Background()
 	class := fmt.Sprintf("products_%v", time.Now().UnixMilli())
-	cfg := map[string]string{
-		"endpoint":           "localhost:18080",
-		"scheme":             "http",
-		"class":              class,
-		"moduleHeader.name":  "X-OpenAI-Api-Key",
-		"moduleHeader.value": openAIKey,
-		"generateUUID":       "true",
-	}
+	cfg := integrationTestCfg(class, openAIKey)
 
 	client, err := newWeaviateClient(cfg)
 	is.NoErr(err)
@@ -106,14 +99,7 @@ func TestDestination_Integration_Update(t *testing.T) {
 
 	ctx := context.Background()
 	class := fmt.Sprintf("Products_%v", time.Now().UnixMilli())
-	cfg := map[string]string{
-		"endpoint":           "localhost:18080",
-		"scheme":             "http",
-		"class":              class,
-		"moduleHeader.name":  "X-OpenAI-Api-Key",
-		"moduleHeader.value": openAIKey,
-		"generateUUID":       "true",
-	}
+	cfg := integrationTestCfg(class, openAIKey)
 
 	client, err := newWeaviateClient(cfg)
 	is.NoErr(err)
@@ -194,14 +180,7 @@ func TestDestination_Integration_Delete(t *testing.T) {
 
 	ctx := context.Background()
 	class := fmt.Sprintf("products_%v", time.Now().UnixMilli())
-	cfg := map[string]string{
-		"endpoint":           "localhost:18080",
-		"scheme":             "http",
-		"class":              class,
-		"moduleHeader.name":  "X-OpenAI-Api-Key",
-		"moduleHeader.value": openAIKey,
-		"generateUUID":       "true",
-	}
+	cfg := integrationTestCfg(class, openAIKey)
 
 	client, err := newWeaviateClient(cfg)
 	is.NoErr(err)
@@ -271,5 +250,16 @@ func integrationTest(t *testing.T) {
 	t.Helper()
 	if os.Getenv("RUN_INTEGRATION_TESTS") == "" {
 		t.Skip("skipping integration tests, set environment variable RUN_INTEGRATION_TESTS")
+	}
+}
+
+func integrationTestCfg(class, openAIKey string) map[string]string {
+	return map[string]string{
+		"endpoint":           "localhost:18080",
+		"scheme":             "http",
+		"class":              class,
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": openAIKey,
+		"generateUUID":       "true",
 	}
 }
