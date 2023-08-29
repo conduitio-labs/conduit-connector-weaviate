@@ -7,7 +7,6 @@ import (
 
 var (
 	ErrMultipleAuth   = errors.New("only one auth. option can be used (API key or WCS)")
-	ErrNoAuth         = errors.New("no authentication provided")
 	ErrIncompleteAuth = errors.New("authentication info incomplete")
 )
 
@@ -38,7 +37,8 @@ func (c *Config) Validate() error {
 		if c.WCS.isSet() {
 			return fmt.Errorf("WCS: %w", ErrIncompleteAuth)
 		}
-		return ErrNoAuth
+
+		return nil
 	}
 
 	// API key is set

@@ -16,11 +16,12 @@ package config_test
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/matryer/is"
-	"testing"
 )
 
 func TestConfig_Auth(t *testing.T) {
@@ -55,11 +56,6 @@ func TestConfig_Auth(t *testing.T) {
 					},
 				},
 			},
-		},
-		{
-			name:    "no auth",
-			cfgMap:  map[string]string{},
-			wantErr: config.ErrNoAuth,
 		},
 		{
 			name: "multiple auth",
