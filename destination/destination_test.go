@@ -52,6 +52,43 @@ func TestDestination_Teardown_NoOpen(t *testing.T) {
 	is.NoErr(err)
 }
 
+func TestDestination_Open_WCSAuth(t *testing.T) {
+	is := is.New(t)
+	ctx := context.Background()
+	cfg := map[string]string{
+		"endpoint":           "test-endpoint",
+		"scheme":             "test-scheme",
+		"wcs.username":       "conduit-user",
+		"wcs.password":       "secret",
+		"class":              "test-class",
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": "test-OpenAI-Api-Key",
+		"generateUUID":       "true",
+	}
+
+	ctrl := gomock.NewController(t)
+	client := mock.NewWeaviateClient(ctrl)
+	client.EXPECT().
+		Open(gomock.Eq(weaviate.Config{
+			WCSAuth: weaviate.WCSAuth{
+				Username: cfg["wcs.username"],
+				Password: cfg["wcs.password"],
+			},
+			Endpoint: cfg["endpoint"],
+			Scheme:   cfg["scheme"],
+			Headers: map[string]string{
+				"X-OpenAI-Api-Key": "test-OpenAI-Api-Key",
+			},
+		}))
+
+	underTest := NewWithClient(client)
+	err := underTest.Configure(ctx, cfg)
+	is.NoErr(err)
+
+	err = underTest.Open(ctx)
+	is.NoErr(err)
+}
+
 func TestDestination_Open_OpensClient(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{

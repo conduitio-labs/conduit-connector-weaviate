@@ -7,7 +7,7 @@ import (
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
-func (DestinationConfig) Parameters() map[string]sdk.Parameter {
+func (Config) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
 		"apiKey": {
 			Default:     "",
@@ -56,6 +56,18 @@ func (DestinationConfig) Parameters() map[string]sdk.Parameter {
 			Validations: []sdk.Validation{
 				sdk.ValidationInclusion{List: []string{"http", "https"}},
 			},
+		},
+		"wcs.password": {
+			Default:     "",
+			Description: "",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
+		"wcs.username": {
+			Default:     "",
+			Description: "",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
 		},
 	}
 }
