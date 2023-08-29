@@ -18,12 +18,10 @@ type Config struct {
 	// Scheme of the Weaviate instance.
 	Scheme string `json:"scheme" default:"https" validate:"inclusion=http|https"`
 
-	//TODO: support additional auth schemes __sL__
-	// https://github.com/conduitio-labs/conduit-connector-weaviate/issues/4
-
 	// A Weaviate API key
 	APIKey string `json:"apiKey"`
 
+	// Weaviate Cloud Services (WCS) credentials.
 	WCS WCSAuth `json:"wcs"`
 
 	// The class name as defined in the schema.
@@ -52,7 +50,9 @@ func (c *Config) Validate() error {
 }
 
 type WCSAuth struct {
+	// WCS username
 	Username string `json:"username"`
+	// WCS password
 	Password string `json:"password"`
 }
 

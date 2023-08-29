@@ -59,13 +59,13 @@ func (Config) Parameters() map[string]sdk.Parameter {
 		},
 		"wcs.password": {
 			Default:     "",
-			Description: "",
+			Description: "WCS password",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
 		"wcs.username": {
 			Default:     "",
-			Description: "",
+			Description: "WCS username",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
