@@ -32,6 +32,11 @@ func TestConfig_Auth(t *testing.T) {
 		wantErr error
 	}{
 		{
+			name:    "no auth is possible",
+			cfgMap:  map[string]string{},
+			wantCfg: destination.Config{},
+		},
+		{
 			name: "API key only",
 			cfgMap: map[string]string{
 				"apiKey": "xyz",
