@@ -25,10 +25,9 @@ var version = "(devel)"
 // Specification returns the connector's specification.
 func Specification() sdk.Specification {
 	return sdk.Specification{
-		Name:        "weaviate",
-		Summary:     "Conduit Connector for Weaviate",
-		Description: "Conduit Connector for Weaviate",
-		Version:     version,
-		Author:      "Meroxa, Inc.",
+		Name:    "weaviate",
+		Summary: "A Conduit destination connector for Weaviate, written in Go.",
+		Version: version,
+		Author:  "Meroxa, Inc.",
 	}
 }

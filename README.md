@@ -18,7 +18,7 @@ The Docker compose file at `test/docker-compose.yml` can be used to run an insta
 ## Destination
 
 The Weaviate destination connectors handles all the changes supported by Conduit, 
-which are: inserts, updates, and deletes.
+which are: inserts, updates, and deletes. 
 
 ### Configuration
 
