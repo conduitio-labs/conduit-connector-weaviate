@@ -97,7 +97,7 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	if !d.config.ModuleHeader.IsValid() {
-		return errors.New("invalid module configuration")
+		return errors.New("invalid moduleHeader configuration")
 	}
 
 	return nil
