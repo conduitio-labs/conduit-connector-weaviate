@@ -11,7 +11,7 @@ func (Config) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
 		"apiKey": {
 			Default:     "",
-			Description: "Weaviate API key.",
+			Description: "A Weaviate API key.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},

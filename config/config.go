@@ -19,7 +19,7 @@ type Config struct {
 	// AuthMechanism specifies in which way the connector will authenticate to Weaviate.
 	AuthMechanism string `json:"auth.mechanism" validate:"inclusion=none|apiKey|wcsCredentials" default:"none"`
 
-	// Weaviate API key.
+	// A Weaviate API key.
 	APIKey string `json:"apiKey"`
 
 	// Weaviate Cloud Services (WCS) credentials.
