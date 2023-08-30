@@ -1,5 +1,3 @@
-.PHONY: build test test-integration generate install-paramgen install-mocken
-
 VERSION				=  $(shell git describe --tags --dirty --always)
 MOCKGEN_VERSION		?= v0.2.0
 PARAMGEN_VERSION	?= v0.7.2
@@ -9,8 +7,8 @@ GOLANG_CI_LINT_VER	:= v1.54.2
 build:
 	go build -ldflags "-X 'github.com/conduitio-labs/conduit-connector-weaviate.version=${VERSION}'" -o conduit-connector-weaviate cmd/connector/main.go
 
-.PHONY: install-mocken
-install-mocken:
+.PHONY: install-mockgen
+install-mockgen:
 	go install go.uber.org/mock/mockgen@$(MOCKGEN_VERSION)
 
 .PHONY: test
@@ -27,7 +25,7 @@ test-integration:
 		exit $$ret
 
 .PHONY: generate
-generate: install-mocken install-paramgen
+generate: install-mockgen install-paramgen
 	go generate ./...
 
 .PHONY: install-paramgen
