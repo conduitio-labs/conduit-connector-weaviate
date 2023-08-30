@@ -23,13 +23,13 @@ func (Config) Parameters() map[string]sdk.Parameter {
 				sdk.ValidationInclusion{List: []string{"none", "apiKey", "wcsCreds"}},
 			},
 		},
-		"auth.wcs.password": {
+		"auth.wcsCreds.password": {
 			Default:     "",
 			Description: "WCS password",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},
-		"auth.wcs.username": {
+		"auth.wcsCreds.username": {
 			Default:     "",
 			Description: "WCS username",
 			Type:        sdk.ParameterTypeString,

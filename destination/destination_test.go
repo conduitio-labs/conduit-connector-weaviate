@@ -71,15 +71,15 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	is := is.New(t)
 	ctx := context.Background()
 	cfg := map[string]string{
-		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
-		"auth.mechanism":     "wcsCreds",
-		"auth.wcs.username":  "conduit-user",
-		"auth.wcs.password":  "secret",
-		"class":              "test-class",
-		"moduleHeader.name":  "X-OpenAI-Api-Key",
-		"moduleHeader.value": "test-OpenAI-Api-Key",
-		"generateUUID":       "true",
+		"endpoint":               "test-endpoint",
+		"scheme":                 "test-scheme",
+		"auth.mechanism":         "wcsCreds",
+		"auth.wcsCreds.username": "conduit-user",
+		"auth.wcsCreds.password": "secret",
+		"class":                  "test-class",
+		"moduleHeader.name":      "X-OpenAI-Api-Key",
+		"moduleHeader.value":     "test-OpenAI-Api-Key",
+		"generateUUID":           "true",
 	}
 
 	ctrl := gomock.NewController(t)
@@ -87,8 +87,8 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	client.EXPECT().
 		Open(gomock.Eq(weaviate.Config{
 			WCSAuth: weaviate.WCSAuth{
-				Username: cfg["auth.wcs.username"],
-				Password: cfg["auth.wcs.password"],
+				Username: cfg["auth.wcsCreds.username"],
+				Password: cfg["auth.wcsCreds.password"],
 			},
 			Endpoint: cfg["endpoint"],
 			Scheme:   cfg["scheme"],

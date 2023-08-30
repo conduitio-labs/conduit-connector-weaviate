@@ -50,7 +50,7 @@ type Auth struct {
 	APIKey string `json:"apiKey"`
 
 	// Weaviate Cloud Services (WCS) credentials.
-	WCSCredentials WCSCredentials `json:"wcs"`
+	WCSCredentials WCSCredentials `json:"wcsCreds"`
 }
 
 func (a Auth) Validate() error {

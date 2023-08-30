@@ -62,9 +62,9 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "WCS username and password",
 			cfgMap: map[string]string{
-				"auth.mechanism":    "wcsCreds",
-				"auth.wcs.username": "abc",
-				"auth.wcs.password": "xyz",
+				"auth.mechanism":         "wcsCreds",
+				"auth.wcsCreds.username": "abc",
+				"auth.wcsCreds.password": "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
@@ -81,16 +81,16 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "partial WCS auth (username)",
 			cfgMap: map[string]string{
-				"auth.mechanism":    "wcsCreds",
-				"auth.wcs.username": "abc",
+				"auth.mechanism":         "wcsCreds",
+				"auth.wcsCreds.username": "abc",
 			},
 			wantErr: config.ErrUsernamePasswordMissing,
 		},
 		{
 			name: "partial WCS auth (password)",
 			cfgMap: map[string]string{
-				"auth.mechanism":    "wcsCreds",
-				"auth.wcs.password": "xyz",
+				"auth.mechanism":         "wcsCreds",
+				"auth.wcsCreds.password": "xyz",
 			},
 			wantErr: config.ErrUsernamePasswordMissing,
 		},
