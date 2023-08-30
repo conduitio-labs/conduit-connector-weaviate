@@ -1,36 +1,33 @@
-# Conduit Connector for <resource>
-[Conduit](https://conduit.io) for <resource>.
+# Conduit Connector for Weaviate
+A [Conduit](https://conduit.io) destination connector for Weaviate.
 
 ## How to build?
-Run `make build` to build the connector.
+Run `make build` to build the connector. For instructions on how to use built connector
+with Conduit, check the [Conduit documentation](https://conduit.io/docs/connectors/installing).
 
 ## Testing
-Run `make test` to run all the unit tests. Run `make test-integration` to run the integration tests.
+To run the unit test, execute `make test`. 
 
-The Docker compose file at `test/docker-compose.yml` can be used to run the required resource locally.
+The integration tests require a running Weaviate instance. The provided `make` targets run
+a Weaviate instance using Docker. To run the integration tests, you need to:
+1. set the `OPENAI_APIKEY` environment variable, which stores an OpenAI API key.
+2. execute `make test-integration`.
 
-## Source
-A source connector pulls data from an external resource and pushes it to downstream resources via Conduit.
-
-### Configuration
-
-| name                  | description                           | required | default value |
-|-----------------------|---------------------------------------|----------|---------------|
-| `source_config_param` | Description of `source_config_param`. | true     | 1000          |
+The Docker compose file at `test/docker-compose.yml` can be used to run an instance of Weaviate locally.
 
 ## Destination
-A destination connector pushes data from upstream resources to an external resource via Conduit.
+
+The Weaviate destination connectors handles all the changes supported by Conduit, 
+which are: inserts, updates, and deletes. 
 
 ### Configuration
 
-| name                       | description                                | required | default value |
-|----------------------------|--------------------------------------------|----------|---------------|
-| `destination_config_param` | Description of `destination_config_param`. | true     | 1000          |
-
-## Known Issues & Limitations
-* Known issue A
-* Limitation A
-
-## Planned work
-- [ ] Item A
-- [ ] Item B
+| name                 | description                                                                                                                         | required | default value |
+|----------------------|-------------------------------------------------------------------------------------------------------------------------------------|----------|---------------|
+| `endpoint`           | Host of the Weaviate instance.                                                                                                      | true     | ""            |
+| `scheme`             | Scheme of the Weaviate instance. Values: `https`, `http`.                                                                           | false    | "https"       |
+| `apiKey`             | A Weaviate API key.                                                                                                                 | false    | ""            |
+| `class`              | The class name as defined in the schema. A record will be saved under this class unless it has the `weaviate.class` metadata field. | true     | ""            |
+| `moduleHeader.name`  | Name of the header configuring a module (e.g. `X-OpenAI-Api-Key`).                                                                  | false    | ""            |
+| `moduleHeader.value` | API key for the module defined above.                                                                                               | false    | ""            |
+| `generateUUID`       | Generate a UUID for records (an MD5 sum of a record's key).                                                                         | false    | "false"       |
