@@ -32,7 +32,7 @@ which are: inserts, updates, and deletes.
 | `generateUUID`           | Generate a UUID for records (an MD5 sum of a record's key).                                                                             | false                                          | "false"       |
 | `auth.mechanism`         | Specifies in which way the connector will authenticate to Weaviate. <br/>Values: `none`, `apiKey`, `wcsCreds`.                    | false                                          | "none"        |
 | `auth.apiKey`            | A Weaviate API key.                                                                                                                     | Required if `auth.mechanism = apiKey`.         | ""            |
-| `auth.wcsCreds.username` | Weaviate Cloud Services (WCS) username.                                                                                                 | Required if `auth.mechanism = wcsCredentials`. | ""            |
+| `auth.wcsCreds.username` | Weaviate Cloud Services (WCS) username.                                                                                                 | Required if `auth.mechanism = wcsCreds`. | ""            |
 | `auth.wcsCreds.password` | Weaviate Cloud Services (WCS) password.                                                                                                 | Required if `auth.mechanism = wcsCredentials`. | ""            |
 
 (For more information about authentication in Weaviate, refer to the Weaviate https://weaviate.io/developers/wcs/guides/authentication.)
