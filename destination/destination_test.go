@@ -58,9 +58,9 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
-		"auth.mechanism":     "wcsCredentials",
-		"wcs.username":       "conduit-user",
-		"wcs.password":       "secret",
+		"auth.mechanism":     "wcsCreds",
+		"auth.wcs.username":  "conduit-user",
+		"auth.wcs.password":  "secret",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
@@ -72,8 +72,8 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	client.EXPECT().
 		Open(gomock.Eq(weaviate.Config{
 			WCSAuth: weaviate.WCSAuth{
-				Username: cfg["wcs.username"],
-				Password: cfg["wcs.password"],
+				Username: cfg["auth.wcs.username"],
+				Password: cfg["auth.wcs.password"],
 			},
 			Endpoint: cfg["endpoint"],
 			Scheme:   cfg["scheme"],
@@ -96,7 +96,7 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
 		"auth.mechanism":     "apiKey",
-		"apiKey":             "test-api-key",
+		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
@@ -113,7 +113,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
 		"auth.mechanism":     "apiKey",
-		"apiKey":             "test-api-key",
+		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
@@ -219,7 +219,7 @@ func setupTest(t *testing.T, ctx context.Context, cfg map[string]string) (sdk.De
 	client := mock.NewWeaviateClient(ctrl)
 	client.EXPECT().
 		Open(gomock.Eq(weaviate.Config{
-			APIKey:   cfg["apiKey"],
+			APIKey:   cfg["auth.apiKey"],
 			Endpoint: cfg["endpoint"],
 			Scheme:   cfg["scheme"],
 			Headers: map[string]string{

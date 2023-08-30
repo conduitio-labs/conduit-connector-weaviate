@@ -16,14 +16,7 @@ type Config struct {
 	// Scheme of the Weaviate instance.
 	Scheme string `json:"scheme" default:"https" validate:"inclusion=http|https"`
 
-	// AuthMechanism specifies in which way the connector will authenticate to Weaviate.
-	AuthMechanism string `json:"auth.mechanism" validate:"inclusion=none|apiKey|wcsCredentials" default:"none"`
-
-	// A Weaviate API key.
-	APIKey string `json:"apiKey"`
-
-	// Weaviate Cloud Services (WCS) credentials.
-	WCSCredentials WCSCredentials `json:"wcs"`
+	Auth Auth `json:"auth"`
 
 	// The class name as defined in the schema.
 	// A record will be saved under this class unless
@@ -32,24 +25,38 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
-	// Validate authentication configuration
-	if c.AuthMechanism == "none" {
+	return c.Auth.Validate()
+}
+
+type Auth struct {
+	// Mechanism specifies in which way the connector will authenticate to Weaviate.
+	Mechanism string `json:"mechanism" validate:"inclusion=none|apiKey|wcsCreds" default:"none"`
+
+	// A Weaviate API key.
+	APIKey string `json:"apiKey"`
+
+	// Weaviate Cloud Services (WCS) credentials.
+	WCSCredentials WCSCredentials `json:"wcs"`
+}
+
+func (a Auth) Validate() error {
+	if a.Mechanism == "none" {
 		return nil
 	}
 
-	if c.AuthMechanism == "apiKey" {
-		if c.APIKey == "" {
+	if a.Mechanism == "apiKey" {
+		if a.APIKey == "" {
 			return errors.New("authMechanism set to 'apiKey', but apiKey not specified")
 		}
 
 		return nil
 	}
 
-	if c.AuthMechanism == "wcsCredentials" {
-		return c.WCSCredentials.Validate()
+	if a.Mechanism == "wcsCreds" {
+		return a.WCSCredentials.Validate()
 	}
 
-	return fmt.Errorf("unknown authMechanism %v", c.AuthMechanism)
+	return fmt.Errorf("unknown auth mechanism %v", a.Mechanism)
 }
 
 type WCSCredentials struct {

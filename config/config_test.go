@@ -38,7 +38,9 @@ func TestConfig_Auth(t *testing.T) {
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
-					AuthMechanism: "none",
+					Auth: config.Auth{
+						Mechanism: "none",
+					},
 				},
 			},
 		},
@@ -46,28 +48,32 @@ func TestConfig_Auth(t *testing.T) {
 			name: "API key only",
 			cfgMap: map[string]string{
 				"auth.mechanism": "apiKey",
-				"apiKey":         "xyz",
+				"auth.apiKey":    "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
-					AuthMechanism: "apiKey",
-					APIKey:        "xyz",
+					Auth: config.Auth{
+						Mechanism: "apiKey",
+						APIKey:    "xyz",
+					},
 				},
 			},
 		},
 		{
 			name: "WCS username and password",
 			cfgMap: map[string]string{
-				"auth.mechanism": "wcsCredentials",
-				"wcs.username":   "abc",
-				"wcs.password":   "xyz",
+				"auth.mechanism":    "wcsCreds",
+				"auth.wcs.username": "abc",
+				"auth.wcs.password": "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
-					AuthMechanism: "wcsCredentials",
-					WCSCredentials: config.WCSCredentials{
-						Username: "abc",
-						Password: "xyz",
+					Auth: config.Auth{
+						Mechanism: "wcsCreds",
+						WCSCredentials: config.WCSCredentials{
+							Username: "abc",
+							Password: "xyz",
+						},
 					},
 				},
 			},
@@ -75,16 +81,16 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "partial WCS auth (username)",
 			cfgMap: map[string]string{
-				"auth.mechanism": "wcsCredentials",
-				"wcs.username":   "abc",
+				"auth.mechanism":    "wcsCreds",
+				"auth.wcs.username": "abc",
 			},
 			wantErr: config.ErrUsernamePasswordMissing,
 		},
 		{
 			name: "partial WCS auth (password)",
 			cfgMap: map[string]string{
-				"auth.mechanism": "wcsCredentials",
-				"wcs.password":   "xyz",
+				"auth.mechanism":    "wcsCreds",
+				"auth.wcs.password": "xyz",
 			},
 			wantErr: config.ErrUsernamePasswordMissing,
 		},

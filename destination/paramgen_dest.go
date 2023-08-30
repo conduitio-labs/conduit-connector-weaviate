@@ -9,7 +9,7 @@ import (
 
 func (Config) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
-		"apiKey": {
+		"auth.apiKey": {
 			Default:     "",
 			Description: "A Weaviate API key.",
 			Type:        sdk.ParameterTypeString,
@@ -17,11 +17,23 @@ func (Config) Parameters() map[string]sdk.Parameter {
 		},
 		"auth.mechanism": {
 			Default:     "none",
-			Description: "auth.mechanism specifies in which way the connector will authenticate to Weaviate.",
+			Description: "mechanism specifies in which way the connector will authenticate to Weaviate.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{
-				sdk.ValidationInclusion{List: []string{"none", "apiKey", "wcsCredentials"}},
+				sdk.ValidationInclusion{List: []string{"none", "apiKey", "wcsCreds"}},
 			},
+		},
+		"auth.wcs.password": {
+			Default:     "",
+			Description: "WCS password",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
+		"auth.wcs.username": {
+			Default:     "",
+			Description: "WCS username",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
 		},
 		"class": {
 			Default:     "",
@@ -64,18 +76,6 @@ func (Config) Parameters() map[string]sdk.Parameter {
 			Validations: []sdk.Validation{
 				sdk.ValidationInclusion{List: []string{"http", "https"}},
 			},
-		},
-		"wcs.password": {
-			Default:     "",
-			Description: "WCS password",
-			Type:        sdk.ParameterTypeString,
-			Validations: []sdk.Validation{},
-		},
-		"wcs.username": {
-			Default:     "",
-			Description: "WCS username",
-			Type:        sdk.ParameterTypeString,
-			Validations: []sdk.Validation{},
 		},
 	}
 }

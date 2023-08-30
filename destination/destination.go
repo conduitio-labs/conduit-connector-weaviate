@@ -213,12 +213,12 @@ func (d *Destination) weaviateConfig() weaviate.Config {
 		}
 	}
 
-	if d.config.APIKey != "" {
-		cfg.APIKey = d.config.APIKey
+	if d.config.Auth.APIKey != "" {
+		cfg.APIKey = d.config.Auth.APIKey
 	} else {
 		cfg.WCSAuth = weaviate.WCSAuth{
-			Username: d.config.WCSCredentials.Username,
-			Password: d.config.WCSCredentials.Password,
+			Username: d.config.Auth.WCSCredentials.Username,
+			Password: d.config.Auth.WCSCredentials.Password,
 		}
 	}
 
