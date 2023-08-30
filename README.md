@@ -33,6 +33,6 @@ which are: inserts, updates, and deletes.
 | `auth.mechanism`         | Specifies in which way the connector will authenticate to Weaviate. <br/>Values: `none`, `apiKey`, `wcsCreds`.                    | false                                          | "none"        |
 | `auth.apiKey`            | A Weaviate API key.                                                                                                                     | Required if `auth.mechanism = apiKey`.         | ""            |
 | `auth.wcsCreds.username` | Weaviate Cloud Services (WCS) username.                                                                                                 | Required if `auth.mechanism = wcsCreds`. | ""            |
-| `auth.wcsCreds.password` | Weaviate Cloud Services (WCS) password.                                                                                                 | Required if `auth.mechanism = wcsCredentials`. | ""            |
+| `auth.wcsCreds.password` | Weaviate Cloud Services (WCS) password.                                                                                                 | Required if `auth.mechanism = wcsCreds`. | ""            |
 
 (For more information about authentication in Weaviate, refer to the Weaviate https://weaviate.io/developers/wcs/guides/authentication.)
