@@ -41,6 +41,7 @@ func TestDestination_Integration_Insert(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
+		"auth.mechanism":     "none",
 		"class":              class,
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": openAIKey,
@@ -109,6 +110,7 @@ func TestDestination_Integration_Update(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
+		"auth.mechanism":     "none",
 		"class":              class,
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": openAIKey,
@@ -197,6 +199,7 @@ func TestDestination_Integration_Delete(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
+		"auth.mechanism":     "none",
 		"class":              class,
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": openAIKey,

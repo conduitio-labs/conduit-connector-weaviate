@@ -11,9 +11,17 @@ func (Config) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
 		"apiKey": {
 			Default:     "",
-			Description: "A Weaviate API key",
+			Description: "Weaviate API key.",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
+		},
+		"auth.mechanism": {
+			Default:     "none",
+			Description: "auth.mechanism specifies in which way the connector will authenticate to Weaviate.",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{
+				sdk.ValidationInclusion{List: []string{"none", "apiKey", "wcsCredentials"}},
+			},
 		},
 		"class": {
 			Default:     "",

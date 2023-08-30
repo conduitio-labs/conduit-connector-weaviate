@@ -58,6 +58,7 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
+		"auth.mechanism":     "wcsCredentials",
 		"wcs.username":       "conduit-user",
 		"wcs.password":       "secret",
 		"class":              "test-class",
@@ -94,6 +95,7 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
+		"auth.mechanism":     "apiKey",
 		"apiKey":             "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
@@ -110,6 +112,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
+		"auth.mechanism":     "apiKey",
 		"apiKey":             "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",

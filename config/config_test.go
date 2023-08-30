@@ -32,30 +32,40 @@ func TestConfig_Auth(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "no auth is possible",
-			cfgMap:  map[string]string{},
-			wantCfg: destination.Config{},
+			name: "no auth is possible",
+			cfgMap: map[string]string{
+				"auth.mechanism": "none",
+			},
+			wantCfg: destination.Config{
+				Config: config.Config{
+					AuthMechanism: "none",
+				},
+			},
 		},
 		{
 			name: "API key only",
 			cfgMap: map[string]string{
-				"apiKey": "xyz",
+				"auth.mechanism": "apiKey",
+				"apiKey":         "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
-					APIKey: "xyz",
+					AuthMechanism: "apiKey",
+					APIKey:        "xyz",
 				},
 			},
 		},
 		{
 			name: "WCS username and password",
 			cfgMap: map[string]string{
-				"wcs.username": "abc",
-				"wcs.password": "xyz",
+				"auth.mechanism": "wcsCredentials",
+				"wcs.username":   "abc",
+				"wcs.password":   "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
-					WCS: config.WCSAuth{
+					AuthMechanism: "wcsCredentials",
+					WCSCredentials: config.WCSCredentials{
 						Username: "abc",
 						Password: "xyz",
 					},
@@ -63,27 +73,20 @@ func TestConfig_Auth(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple auth",
-			cfgMap: map[string]string{
-				"apiKey":       "123",
-				"wcs.username": "abc",
-				"wcs.password": "xyz",
-			},
-			wantErr: config.ErrMultipleAuth,
-		},
-		{
 			name: "partial WCS auth (username)",
 			cfgMap: map[string]string{
-				"wcs.username": "abc",
+				"auth.mechanism": "wcsCredentials",
+				"wcs.username":   "abc",
 			},
-			wantErr: config.ErrIncompleteAuth,
+			wantErr: config.ErrUsernamePasswordMissing,
 		},
 		{
 			name: "partial WCS auth (password)",
 			cfgMap: map[string]string{
-				"wcs.password": "xyz",
+				"auth.mechanism": "wcsCredentials",
+				"wcs.password":   "xyz",
 			},
-			wantErr: config.ErrIncompleteAuth,
+			wantErr: config.ErrUsernamePasswordMissing,
 		},
 	}
 

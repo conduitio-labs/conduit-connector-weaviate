@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	ErrMultipleAuth   = errors.New("only one authentication option can be used (API key or WCS)")
-	ErrIncompleteAuth = errors.New("authentication info incomplete")
+	ErrUsernamePasswordMissing = errors.New("username or password missing")
 )
 
 type Config struct {
@@ -17,11 +16,14 @@ type Config struct {
 	// Scheme of the Weaviate instance.
 	Scheme string `json:"scheme" default:"https" validate:"inclusion=http|https"`
 
-	// A Weaviate API key
+	// AuthMechanism specifies in which way the connector will authenticate to Weaviate.
+	AuthMechanism string `json:"auth.mechanism" validate:"inclusion=none|apiKey|wcsCredentials" default:"none"`
+
+	// Weaviate API key.
 	APIKey string `json:"apiKey"`
 
 	// Weaviate Cloud Services (WCS) credentials.
-	WCS WCSAuth `json:"wcs"`
+	WCSCredentials WCSCredentials `json:"wcs"`
 
 	// The class name as defined in the schema.
 	// A record will be saved under this class unless
@@ -30,36 +32,37 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
-	if c.APIKey == "" {
-		if c.WCS.Valid() {
-			return nil
-		}
-		if c.WCS.isSet() {
-			return fmt.Errorf("WCS: %w", ErrIncompleteAuth)
+	// Validate authentication configuration
+	if c.AuthMechanism == "none" {
+		return nil
+	}
+
+	if c.AuthMechanism == "apiKey" {
+		if c.APIKey == "" {
+			return errors.New("authMechanism set to 'apiKey', but apiKey not specified")
 		}
 
 		return nil
 	}
 
-	// API key is set
-	if c.WCS.isSet() {
-		return ErrMultipleAuth
+	if c.AuthMechanism == "wcsCredentials" {
+		return c.WCSCredentials.Validate()
 	}
 
-	return nil
+	return fmt.Errorf("unknown authMechanism %v", c.AuthMechanism)
 }
 
-type WCSAuth struct {
+type WCSCredentials struct {
 	// WCS username
 	Username string `json:"username"`
 	// WCS password
 	Password string `json:"password"`
 }
 
-func (a *WCSAuth) Valid() bool {
-	return a.Username != "" && a.Password != ""
-}
+func (a *WCSCredentials) Validate() error {
+	if a.Username == "" || a.Password == "" {
+		return ErrUsernamePasswordMissing
+	}
 
-func (a *WCSAuth) isSet() bool {
-	return a.Username != "" || a.Password != ""
+	return nil
 }
