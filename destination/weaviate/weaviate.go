@@ -25,9 +25,15 @@ import (
 
 type Config struct {
 	APIKey   string
+	WCSAuth  WCSAuth
 	Endpoint string
 	Scheme   string
 	Headers  map[string]string
+}
+
+type WCSAuth struct {
+	Username string
+	Password string
 }
 
 type Object struct {
@@ -42,7 +48,15 @@ type Client struct {
 }
 
 func (c *Client) Open(config Config) error {
-	authConfig := auth.ApiKey{Value: config.APIKey}
+	var authConfig auth.Config
+	if config.APIKey != "" {
+		authConfig = auth.ApiKey{Value: config.APIKey}
+	} else {
+		authConfig = auth.ResourceOwnerPasswordFlow{
+			Username: config.WCSAuth.Username,
+			Password: config.WCSAuth.Password,
+		}
+	}
 
 	wcfg := weaviate.Config{
 		Host:       config.Endpoint,

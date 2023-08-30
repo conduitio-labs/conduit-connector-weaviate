@@ -7,11 +7,31 @@ import (
 	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
-func (DestinationConfig) Parameters() map[string]sdk.Parameter {
+func (Config) Parameters() map[string]sdk.Parameter {
 	return map[string]sdk.Parameter{
-		"apiKey": {
+		"auth.apiKey": {
 			Default:     "",
-			Description: "A Weaviate API key",
+			Description: "A Weaviate API key.",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
+		"auth.mechanism": {
+			Default:     "none",
+			Description: "mechanism specifies in which way the connector will authenticate to Weaviate.",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{
+				sdk.ValidationInclusion{List: []string{"none", "apiKey", "wcsCreds"}},
+			},
+		},
+		"auth.wcsCreds.password": {
+			Default:     "",
+			Description: "WCS password",
+			Type:        sdk.ParameterTypeString,
+			Validations: []sdk.Validation{},
+		},
+		"auth.wcsCreds.username": {
+			Default:     "",
+			Description: "WCS username",
 			Type:        sdk.ParameterTypeString,
 			Validations: []sdk.Validation{},
 		},

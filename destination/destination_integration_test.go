@@ -299,6 +299,7 @@ func integrationTestCfg(class, openAIKey string) map[string]string {
 	return map[string]string{
 		"endpoint":           "localhost:18080",
 		"scheme":             "http",
+		"auth.mechanism":     "none",
 		"class":              class,
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": openAIKey,

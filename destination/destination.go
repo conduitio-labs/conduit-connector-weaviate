@@ -14,7 +14,7 @@
 
 package destination
 
-//go:generate paramgen -output=paramgen_dest.go DestinationConfig
+//go:generate paramgen -output=paramgen_dest.go Config
 //go:generate mockgen -source=destination.go -package=mock -destination=mock/client_mock.go -mock_names=weaviateClient=WeaviateClient . weaviateClient
 
 import (
@@ -47,7 +47,7 @@ type weaviateClient interface {
 type Destination struct {
 	sdk.UnimplementedDestination
 
-	config DestinationConfig
+	config Config
 	client weaviateClient
 }
 
@@ -63,7 +63,7 @@ func (m ModuleHeader) IsValid() bool {
 		(m.Name != "" && m.Value != "")
 }
 
-type DestinationConfig struct {
+type Config struct {
 	config.Config
 	//TODO: better naming for this value __sL__
 	// Vectorizers which can be configured client side
@@ -100,7 +100,12 @@ func (d *Destination) Configure(ctx context.Context, cfg map[string]string) erro
 	}
 
 	if !d.config.ModuleHeader.IsValid() {
-		return errors.New("invalid moduleHeader configuration")
+		return errors.New("invalid module configuration")
+	}
+
+	err = d.config.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid configuration: %w", err)
 	}
 
 	return nil
@@ -223,19 +228,27 @@ func (d *Destination) recordProperties(record sdk.Record) (map[string]interface{
 }
 
 func (d *Destination) weaviateConfig() weaviate.Config {
-	var headers map[string]string
+	cfg := weaviate.Config{
+		Endpoint: d.config.Endpoint,
+		Scheme:   d.config.Scheme,
+	}
+
 	if d.config.ModuleHeader.IsValid() {
-		headers = map[string]string{
+		cfg.Headers = map[string]string{
 			d.config.ModuleHeader.Name: d.config.ModuleHeader.Value,
 		}
 	}
 
-	return weaviate.Config{
-		APIKey:   d.config.APIKey,
-		Endpoint: d.config.Endpoint,
-		Scheme:   d.config.Scheme,
-		Headers:  headers,
+	if d.config.Auth.APIKey != "" {
+		cfg.APIKey = d.config.Auth.APIKey
+	} else {
+		cfg.WCSAuth = weaviate.WCSAuth{
+			Username: d.config.Auth.WCSCredentials.Username,
+			Password: d.config.Auth.WCSCredentials.Password,
+		}
 	}
+
+	return cfg
 }
 
 func (d *Destination) recordVector(s string) ([]float32, error) {

@@ -67,12 +67,51 @@ func TestDestination_Teardown_NoOpen(t *testing.T) {
 	is.NoErr(err)
 }
 
+func TestDestination_Open_WCSAuth(t *testing.T) {
+	is := is.New(t)
+	ctx := context.Background()
+	cfg := map[string]string{
+		"endpoint":               "test-endpoint",
+		"scheme":                 "test-scheme",
+		"auth.mechanism":         "wcsCreds",
+		"auth.wcsCreds.username": "conduit-user",
+		"auth.wcsCreds.password": "secret",
+		"class":                  "test-class",
+		"moduleHeader.name":      "X-OpenAI-Api-Key",
+		"moduleHeader.value":     "test-OpenAI-Api-Key",
+		"generateUUID":           "true",
+	}
+
+	ctrl := gomock.NewController(t)
+	client := mock.NewWeaviateClient(ctrl)
+	client.EXPECT().
+		Open(gomock.Eq(weaviate.Config{
+			WCSAuth: weaviate.WCSAuth{
+				Username: cfg["auth.wcsCreds.username"],
+				Password: cfg["auth.wcsCreds.password"],
+			},
+			Endpoint: cfg["endpoint"],
+			Scheme:   cfg["scheme"],
+			Headers: map[string]string{
+				"X-OpenAI-Api-Key": "test-OpenAI-Api-Key",
+			},
+		}))
+
+	underTest := NewWithClient(client)
+	err := underTest.Configure(ctx, cfg)
+	is.NoErr(err)
+
+	err = underTest.Open(ctx)
+	is.NoErr(err)
+}
+
 func TestDestination_Open_OpensClient(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
-		"apiKey":             "test-api-key",
+		"auth.mechanism":     "apiKey",
+		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
@@ -89,7 +128,8 @@ func TestDestination_SingleWrite(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
-		"apiKey":             "test-api-key",
+		"auth.mechanism":     "apiKey",
+		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
@@ -195,8 +235,9 @@ func TestDestination_RecordWithVector(t *testing.T) {
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
 		"scheme":             "test-scheme",
-		"apiKey":             "test-api-key",
 		"class":              "test-class",
+		"auth.mechanism":     "apiKey",
+		"auth.apiKey":        "test-api-key",
 		"moduleHeader.name":  "X-OpenAI-Api-Key",
 		"moduleHeader.value": "test-OpenAI-Api-Key",
 		"generateUUID":       "false",
@@ -283,7 +324,7 @@ func setupTest(t *testing.T, ctx context.Context, cfg map[string]string) (sdk.De
 	client := mock.NewWeaviateClient(ctrl)
 	client.EXPECT().
 		Open(gomock.Eq(weaviate.Config{
-			APIKey:   cfg["apiKey"],
+			APIKey:   cfg["auth.apiKey"],
 			Endpoint: cfg["endpoint"],
 			Scheme:   cfg["scheme"],
 			Headers: map[string]string{
