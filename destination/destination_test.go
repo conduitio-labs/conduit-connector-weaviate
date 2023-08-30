@@ -1,7 +1,22 @@
+// Copyright © 2022 Meroxa, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package destination
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -106,6 +121,7 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 	// setupTest is doing the basic checks
 	_, _ = setupTest(t, ctx, cfg)
 }
+
 func TestDestination_SingleWrite(t *testing.T) {
 	is := is.New(t)
 	ctx := context.Background()
@@ -209,6 +225,95 @@ func TestDestination_SingleWrite(t *testing.T) {
 			n, err := underTest.Write(ctx, []sdk.Record{tc.record})
 			is.NoErr(err)
 			is.Equal(1, n)
+		})
+	}
+}
+
+func TestDestination_RecordWithVector(t *testing.T) {
+	is := is.New(t)
+	ctx := context.Background()
+	cfg := map[string]string{
+		"endpoint":           "test-endpoint",
+		"scheme":             "test-scheme",
+		"class":              "test-class",
+		"auth.mechanism":     "apiKey",
+		"auth.apiKey":        "test-api-key",
+		"moduleHeader.name":  "X-OpenAI-Api-Key",
+		"moduleHeader.value": "test-OpenAI-Api-Key",
+		"generateUUID":       "false",
+	}
+
+	testCases := []struct {
+		name    string
+		input   string
+		want    []float32
+		wantErr error
+	}{
+		{
+			name:  "valid vector",
+			input: "110.1,220",
+			want:  []float32{110.1, 220},
+		},
+		{
+			name:  "no vector",
+			input: "",
+			want:  nil,
+		},
+		{
+			name:  "empty element",
+			input: "111.1,   ,222.2",
+			want:  nil,
+			wantErr: errors.New(
+				"error routing create: error creating Weaviate object: " +
+					"failed parsing vector from metadata, input: 111.1,   ,222.2, error: cannot parse    : " +
+					"strconv.ParseFloat: parsing \"   \": invalid syntax",
+			),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			underTest, wClient := setupTest(t, ctx, cfg)
+			inputRec := sdk.Util.Source.NewRecordCreate(
+				sdk.Position("test-position"),
+				map[string]string{
+					metadataClass:  "top-secret-class",
+					metadataVector: tc.input,
+				},
+				sdk.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
+				sdk.StructuredData{
+					"product_name": "computer",
+					"price":        1000,
+					"labels":       []string{"laptop", "navy-blue"},
+					"used":         true,
+				},
+			)
+			wantObj := &weaviate.Object{
+				ID:    "f9a510b3-5865-40e4-9fe8-e7fbab25b8bc",
+				Class: "top-secret-class",
+				Properties: map[string]interface{}{
+					"product_name": "computer",
+					"price":        float64(1000),
+					"labels":       []any{"laptop", "navy-blue"},
+					"used":         true,
+				},
+				Vector: tc.want,
+			}
+
+			if tc.wantErr == nil {
+				wClient.EXPECT().Insert(ctx, newEqMatcher(wantObj))
+			}
+
+			n, err := underTest.Write(ctx, []sdk.Record{inputRec})
+
+			if tc.wantErr == nil {
+				is.NoErr(err)
+				is.Equal(1, n)
+			} else {
+				is.True(err != nil)
+				is.Equal(tc.wantErr.Error(), err.Error())
+				is.Equal(0, n)
+			}
 		})
 	}
 }

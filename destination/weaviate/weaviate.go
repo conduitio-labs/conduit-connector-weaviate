@@ -1,3 +1,17 @@
+// Copyright © 2022 Meroxa, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package weaviate
 
 import (
@@ -26,6 +40,7 @@ type Object struct {
 	ID         string
 	Class      string
 	Properties map[string]interface{}
+	Vector     []float32
 }
 
 type Client struct {
@@ -61,13 +76,11 @@ func (c *Client) Open(config Config) error {
 }
 
 func (c *Client) Insert(ctx context.Context, obj *Object) error {
-	//TODO: We should handle case where "vector" is in the payload.
-	// you'd need to pull it out and add it on higher level __sL__
-	// https://github.com/conduitio-labs/conduit-connector-weaviate/issues/3
 	_, err := c.client.Data().Creator().
 		WithClassName(obj.Class).
 		WithID(obj.ID).
 		WithProperties(obj.Properties).
+		WithVector(obj.Vector).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
 

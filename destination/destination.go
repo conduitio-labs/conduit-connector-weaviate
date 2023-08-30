@@ -1,3 +1,17 @@
+// Copyright © 2022 Meroxa, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package destination
 
 //go:generate paramgen -output=paramgen_dest.go Config
@@ -8,6 +22,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
@@ -16,7 +32,8 @@ import (
 )
 
 var (
-	metadataClass = "weaviate.class"
+	metadataClass  = "weaviate.class"
+	metadataVector = "weaviate.vector"
 )
 
 type weaviateClient interface {
@@ -169,10 +186,19 @@ func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error)
 		class = record.Metadata[metadataClass]
 	}
 
+	var vector []float32
+	if record.Metadata != nil && record.Metadata[metadataVector] != "" {
+		vector, err = d.recordVector(record.Metadata[metadataVector])
+		if err != nil {
+			return nil, fmt.Errorf("failed parsing vector from metadata, input: %v, error: %w", record.Metadata[metadataVector], err)
+		}
+	}
+
 	return &weaviate.Object{
 		ID:         d.recordUUID(record),
 		Class:      class,
 		Properties: properties,
+		Vector:     vector,
 	}, nil
 }
 
@@ -223,4 +249,22 @@ func (d *Destination) weaviateConfig() weaviate.Config {
 	}
 
 	return cfg
+}
+
+func (d *Destination) recordVector(s string) ([]float32, error) {
+	var vector []float32
+	for _, vs := range strings.Split(s, ",") {
+		if vs == "" {
+			return nil, errors.New("got an empty string")
+		}
+
+		v, err := strconv.ParseFloat(vs, 32)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse %v: %w", vs, err)
+		}
+
+		vector = append(vector, float32(v))
+	}
+
+	return vector, nil
 }
