@@ -19,9 +19,6 @@ test-integration:
 generate:
 	go generate ./...
 
-install-paramgen:
-	go install github.com/conduitio/conduit-connector-sdk/cmd/paramgen@latest
-
 install-tools:
 	@echo Installing tools from tools.go
 	@go list -e -f '{{ join .Imports "\n" }}' tools.go | xargs -tI % go install %
