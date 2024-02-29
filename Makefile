@@ -5,8 +5,8 @@ VERSION=$(shell git describe --tags --dirty --always)
 build:
 	go build -ldflags "-X 'github.com/conduitio-labs/conduit-connector-weaviate.version=${VERSION}'" -o conduit-connector-weaviate cmd/connector/main.go
 
-test:
-	go test $(GOTEST_FLAGS) -race ./...
+test: generate
+	CGO_ENABLED=1 go test $(GOTEST_FLAGS) -race ./...
 
 test-integration: export RUN_INTEGRATION_TESTS=true
 test-integration:
