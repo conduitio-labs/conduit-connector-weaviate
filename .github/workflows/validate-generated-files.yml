@@ -14,10 +14,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version-file: 'go.mod'
 
       - name: Check generated files
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          make generate
+          make install-tools generate
           git diff --exit-code --numstat
