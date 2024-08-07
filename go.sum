@@ -557,8 +557,8 @@ github.com/uudashr/gocognit v1.1.2 h1:l6BAEKJqQH2UpKAPKdMfZf5kE4W/2xk8pfU1OVLvni
 github.com/uudashr/gocognit v1.1.2/go.mod h1:aAVdLURqcanke8h3vg35BC++eseDm66Z7KmchI5et4k=
 github.com/weaviate/weaviate v1.26.0-rc.1 h1:p+8Cw4VfAbevtf90/sEN+43IHMBtdUc5ZH3r4NZKVR8=
 github.com/weaviate/weaviate v1.26.0-rc.1/go.mod h1:o6nFEB4UozA+B2fnAWyF0HZqB2ab44pRhJHYwvxVyyA=
-github.com/weaviate/weaviate-go-client/v4 v4.15.0 h1:+gSKFLpy6iXTDNtjgYFOuCj0RY7F+sICefKpZarnOuA=
-github.com/weaviate/weaviate-go-client/v4 v4.15.0/go.mod h1:0aUsHXNfsdRfbO46t4Us5KUHqkhY+hlHevK6fBu72J4=
+github.com/weaviate/weaviate-go-client/v4 v4.15.1 h1:zw+aw8DsZZkSiFyZOkuKKK49y0jnNr+4nKXCUKsyR/Q=
+github.com/weaviate/weaviate-go-client/v4 v4.15.1/go.mod h1:0aUsHXNfsdRfbO46t4Us5KUHqkhY+hlHevK6fBu72J4=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=
 github.com/xdg-go/stringprep v1.0.2/go.mod h1:8F9zXuvzgwmyT5DUm4GUfZGDdT3W+LCvS6+da4O5kxM=
