@@ -15,9 +15,8 @@
 package weaviate
 
 import (
-	sdk "github.com/conduitio/conduit-connector-sdk"
-
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
+	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
 // Connector combines all constructors for each plugin in one struct.

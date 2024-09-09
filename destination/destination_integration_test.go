@@ -87,16 +87,16 @@ func integrationTestInsert(t *testing.T, openAIKey string, wantVector []float32)
 		"used":         true,
 	}
 	rec := sdk.Util.Source.NewRecordCreate(
-		sdk.Position("test-position"),
+		opencdc.Position("test-position"),
 		map[string]string{},
-		sdk.RawData(id),
-		sdk.StructuredData(wantProperties),
+		opencdc.RawData(id),
+		opencdc.StructuredData(wantProperties),
 	)
 	if wantVector != nil {
 		rec.Metadata[metadataVector] = toString(wantVector)
 	}
 
-	n, err := underTest.Write(ctx, []sdk.Record{rec})
+	n, err := underTest.Write(ctx, []opencdc.Record{rec})
 	is.NoErr(err)
 	is.Equal(1, n)
 
@@ -163,10 +163,10 @@ func TestDestination_Integration_Update(t *testing.T) {
 	// Insert record
 	id := "test-id"
 	recInsert := sdk.Util.Source.NewRecordCreate(
-		sdk.Position("test-position"),
+		opencdc.Position("test-position"),
 		map[string]string{},
-		sdk.RawData(id),
-		sdk.StructuredData(map[string]any{
+		opencdc.RawData(id),
+		opencdc.StructuredData(map[string]any{
 			"product_name": "computer",
 			"price":        220.15,
 			"labels":       []any{"laptop", "navy-blue"},
@@ -174,7 +174,7 @@ func TestDestination_Integration_Update(t *testing.T) {
 		}),
 	)
 
-	n, err := underTest.Write(ctx, []sdk.Record{recInsert})
+	n, err := underTest.Write(ctx, []opencdc.Record{recInsert})
 	is.NoErr(err)
 	is.Equal(1, n)
 
@@ -186,14 +186,14 @@ func TestDestination_Integration_Update(t *testing.T) {
 		"used":         true,
 	}
 	recUpdate := sdk.Util.Source.NewRecordUpdate(
-		sdk.Position("test-position"),
+		opencdc.Position("test-position"),
 		map[string]string{},
-		sdk.RawData(id),
+		opencdc.RawData(id),
 		nil,
-		sdk.StructuredData(payloadUpdate),
+		opencdc.StructuredData(payloadUpdate),
 	)
 
-	n, err = underTest.Write(ctx, []sdk.Record{recUpdate})
+	n, err = underTest.Write(ctx, []opencdc.Record{recUpdate})
 	is.NoErr(err)
 	is.Equal(1, n)
 
@@ -250,18 +250,18 @@ func TestDestination_Integration_Delete(t *testing.T) {
 		"used":         true,
 	}
 	rec := sdk.Util.Source.NewRecordCreate(
-		sdk.Position("test-position"),
+		opencdc.Position("test-position"),
 		map[string]string{},
-		sdk.RawData(id),
-		sdk.StructuredData(want),
+		opencdc.RawData(id),
+		opencdc.StructuredData(want),
 	)
 
-	n, err := underTest.Write(ctx, []sdk.Record{rec})
+	n, err := underTest.Write(ctx, []opencdc.Record{rec})
 	is.NoErr(err)
 	is.Equal(1, n)
 
-	recDelete := sdk.Util.Source.NewRecordDelete(nil, nil, sdk.RawData(id))
-	n, err = underTest.Write(ctx, []sdk.Record{recDelete})
+	recDelete := sdk.Util.Source.NewRecordDelete(nil, nil, opencdc.RawData(id))
+	n, err = underTest.Write(ctx, []opencdc.Record{recDelete})
 	is.NoErr(err)
 	is.Equal(1, n)
 

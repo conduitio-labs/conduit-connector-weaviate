@@ -19,9 +19,7 @@ import (
 	"fmt"
 )
 
-var (
-	ErrUsernamePasswordMissing = errors.New("username or password missing")
-)
+var ErrUsernamePasswordMissing = errors.New("username or password missing")
 
 type Config struct {
 	// Host of the Weaviate instance.

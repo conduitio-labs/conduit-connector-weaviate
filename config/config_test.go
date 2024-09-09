@@ -101,7 +101,7 @@ func TestConfig_Auth(t *testing.T) {
 			is := is.New(t)
 
 			cfg := destination.Config{}
-			err := sdk.Util.ParseConfig(tc.cfgMap, &cfg)
+			err := sdk.Util.ParseConfig(ctx, tc.cfgMap, &cfg)
 			is.NoErr(err)
 
 			err = cfg.Validate()
