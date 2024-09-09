@@ -70,7 +70,7 @@ func (d *Destination) Parameters() sdkconfig.Parameters {
 
 func (d *Destination) Configure(ctx context.Context, cfg sdkconfig.Config) error {
 	sdk.Logger(ctx).Info().Msg("Configuring Destination...")
-	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, d.Parameters())
+	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, New().Parameters())
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
