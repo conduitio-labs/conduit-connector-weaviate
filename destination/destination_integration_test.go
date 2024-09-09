@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"os"
 	"testing"
 	"time"
@@ -260,7 +261,7 @@ func TestDestination_Integration_Delete(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(1, n)
 
-	recDelete := sdk.Util.Source.NewRecordDelete(nil, nil, opencdc.RawData(id))
+	recDelete := sdk.Util.Source.NewRecordDelete(nil, nil, opencdc.RawData(id), nil)
 	n, err = underTest.Write(ctx, []opencdc.Record{recDelete})
 	is.NoErr(err)
 	is.Equal(1, n)

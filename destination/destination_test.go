@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"strings"
 	"testing"
 
@@ -72,7 +73,7 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":               "test-endpoint",
-		"scheme":                 "test-scheme",
+		"scheme":                 "https",
 		"auth.mechanism":         "wcsCreds",
 		"auth.wcsCreds.username": "conduit-user",
 		"auth.wcsCreds.password": "secret",
@@ -109,7 +110,7 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
@@ -127,7 +128,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
@@ -234,7 +235,7 @@ func TestDestination_RecordWithVector(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"class":              "test-class",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",

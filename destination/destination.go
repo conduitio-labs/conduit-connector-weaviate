@@ -28,7 +28,6 @@ import (
 	sdkconfig "github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
 
-	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
@@ -52,32 +51,6 @@ type Destination struct {
 
 	config Config
 	client weaviateClient
-}
-
-type ModuleHeader struct {
-	// Name of the header configuring a module (e.g. `X-OpenAI-Api-Key`)
-	Name string `json:"name"`
-	// Value for header given in `moduleHeader.name`.
-	Value string `json:"value"`
-}
-
-func (m ModuleHeader) IsValid() bool {
-	return (m.Name == "" && m.Value == "") ||
-		(m.Name != "" && m.Value != "")
-}
-
-type Config struct {
-	config.Config
-	// TODO: better naming for this value __sL__
-	// Vectorizers which can be configured client side
-	// mostly require an API key only.
-	// However, OpenAI can also be configured with an organization
-	// via the X-OpenAI-Organization header.
-
-	ModuleHeader ModuleHeader `json:"moduleHeader"`
-	// Whether a UUID for records should be automatically generated.
-	// The generated UUIDs are MD5 sums of record keys.
-	GenerateUUID bool `json:"generateUUID"`
 }
 
 func New() sdk.Destination {
