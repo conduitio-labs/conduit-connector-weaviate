@@ -15,6 +15,7 @@
 package config_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -34,10 +35,16 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "no auth is possible",
 			cfgMap: map[string]string{
+				"endpoint":       "test-endpoint",
+				"scheme":         "https",
+				"class":          "test-class",
 				"auth.mechanism": "none",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
+					Endpoint: "test-endpoint",
+					Scheme:   "https",
+					Class:    "test-class",
 					Auth: config.Auth{
 						Mechanism: "none",
 					},
@@ -47,11 +54,17 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "API key only",
 			cfgMap: map[string]string{
+				"endpoint":       "test-endpoint",
+				"scheme":         "https",
+				"class":          "test-class",
 				"auth.mechanism": "apiKey",
 				"auth.apiKey":    "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
+					Endpoint: "test-endpoint",
+					Scheme:   "https",
+					Class:    "test-class",
 					Auth: config.Auth{
 						Mechanism: "apiKey",
 						APIKey:    "xyz",
@@ -62,12 +75,18 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "WCS username and password",
 			cfgMap: map[string]string{
+				"endpoint":               "test-endpoint",
+				"scheme":                 "https",
+				"class":                  "test-class",
 				"auth.mechanism":         "wcsCreds",
 				"auth.wcsCreds.username": "abc",
 				"auth.wcsCreds.password": "xyz",
 			},
 			wantCfg: destination.Config{
 				Config: config.Config{
+					Endpoint: "test-endpoint",
+					Scheme:   "https",
+					Class:    "test-class",
 					Auth: config.Auth{
 						Mechanism: "wcsCreds",
 						WCSCredentials: config.WCSCredentials{
@@ -81,6 +100,9 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "partial WCS auth (username)",
 			cfgMap: map[string]string{
+				"endpoint":               "test-endpoint",
+				"scheme":                 "https",
+				"class":                  "test-class",
 				"auth.mechanism":         "wcsCreds",
 				"auth.wcsCreds.username": "abc",
 			},
@@ -89,6 +111,9 @@ func TestConfig_Auth(t *testing.T) {
 		{
 			name: "partial WCS auth (password)",
 			cfgMap: map[string]string{
+				"endpoint":               "test-endpoint",
+				"scheme":                 "https",
+				"class":                  "test-class",
 				"auth.mechanism":         "wcsCreds",
 				"auth.wcsCreds.password": "xyz",
 			},
@@ -99,9 +124,10 @@ func TestConfig_Auth(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			is := is.New(t)
+			ctx := context.Background()
 
 			cfg := destination.Config{}
-			err := sdk.Util.ParseConfig(tc.cfgMap, &cfg)
+			err := sdk.Util.ParseConfig(ctx, tc.cfgMap, &cfg, cfg.Parameters())
 			is.NoErr(err)
 
 			err = cfg.Validate()

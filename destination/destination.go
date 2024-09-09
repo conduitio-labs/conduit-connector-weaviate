@@ -25,7 +25,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/conduitio-labs/conduit-connector-weaviate/config"
+	sdkconfig "github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
+
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
@@ -51,32 +53,6 @@ type Destination struct {
 	client weaviateClient
 }
 
-type ModuleHeader struct {
-	// Name of the header configuring a module (e.g. `X-OpenAI-Api-Key`)
-	Name string `json:"name"`
-	// Value for header given in `moduleHeader.name`.
-	Value string `json:"value"`
-}
-
-func (m ModuleHeader) IsValid() bool {
-	return (m.Name == "" && m.Value == "") ||
-		(m.Name != "" && m.Value != "")
-}
-
-type Config struct {
-	config.Config
-	//TODO: better naming for this value __sL__
-	// Vectorizers which can be configured client side
-	// mostly require an API key only.
-	// However, OpenAI can also be configured with an organization
-	// via the X-OpenAI-Organization header.
-
-	ModuleHeader ModuleHeader `json:"moduleHeader"`
-	// Whether a UUID for records should be automatically generated.
-	// The generated UUIDs are MD5 sums of record keys.
-	GenerateUUID bool `json:"generateUUID"`
-}
-
 func New() sdk.Destination {
 	return NewWithClient(&weaviate.Client{})
 }
@@ -88,13 +64,13 @@ func NewWithClient(client weaviateClient) sdk.Destination {
 	)
 }
 
-func (d *Destination) Parameters() map[string]sdk.Parameter {
+func (d *Destination) Parameters() sdkconfig.Parameters {
 	return d.config.Parameters()
 }
 
-func (d *Destination) Configure(ctx context.Context, cfg map[string]string) error {
+func (d *Destination) Configure(ctx context.Context, cfg sdkconfig.Config) error {
 	sdk.Logger(ctx).Info().Msg("Configuring Destination...")
-	err := sdk.Util.ParseConfig(cfg, &d.config)
+	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, d.Parameters())
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
@@ -120,7 +96,7 @@ func (d *Destination) Open(context.Context) error {
 	return nil
 }
 
-func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, error) {
+func (d *Destination) Write(ctx context.Context, records []opencdc.Record) (int, error) {
 	for i, record := range records {
 		err := sdk.Util.Destination.Route(
 			ctx,
@@ -130,7 +106,6 @@ func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, err
 			d.delete,
 			d.insert,
 		)
-
 		if err != nil {
 			return i, fmt.Errorf("error routing %v: %w", record.Operation, err)
 		}
@@ -146,7 +121,7 @@ func (d *Destination) Teardown(context.Context) error {
 	return nil
 }
 
-func (d *Destination) insert(ctx context.Context, record sdk.Record) error {
+func (d *Destination) insert(ctx context.Context, record opencdc.Record) error {
 	obj, err := d.toWeaviateObj(record)
 	if err != nil {
 		return fmt.Errorf("error creating Weaviate object: %w", err)
@@ -155,7 +130,7 @@ func (d *Destination) insert(ctx context.Context, record sdk.Record) error {
 	return d.client.Insert(ctx, obj)
 }
 
-func (d *Destination) update(ctx context.Context, record sdk.Record) error {
+func (d *Destination) update(ctx context.Context, record opencdc.Record) error {
 	obj, err := d.toWeaviateObj(record)
 	if err != nil {
 		return fmt.Errorf("error creating Weaviate object: %w", err)
@@ -164,7 +139,7 @@ func (d *Destination) update(ctx context.Context, record sdk.Record) error {
 	return d.client.Update(ctx, obj)
 }
 
-func (d *Destination) delete(ctx context.Context, record sdk.Record) error {
+func (d *Destination) delete(ctx context.Context, record opencdc.Record) error {
 	return d.client.Delete(
 		ctx,
 		&weaviate.Object{
@@ -174,9 +149,8 @@ func (d *Destination) delete(ctx context.Context, record sdk.Record) error {
 	)
 }
 
-func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error) {
+func (d *Destination) toWeaviateObj(record opencdc.Record) (*weaviate.Object, error) {
 	properties, err := d.recordProperties(record)
-
 	if err != nil {
 		return nil, fmt.Errorf("update property conversion: %w", err)
 	}
@@ -202,7 +176,7 @@ func (d *Destination) toWeaviateObj(record sdk.Record) (*weaviate.Object, error)
 	}, nil
 }
 
-func (d *Destination) recordUUID(record sdk.Record) string {
+func (d *Destination) recordUUID(record opencdc.Record) string {
 	key := record.Key.Bytes()
 	if !d.config.GenerateUUID {
 		return string(key)
@@ -210,7 +184,7 @@ func (d *Destination) recordUUID(record sdk.Record) string {
 	return uuid.NewMD5(uuid.NameSpaceOID, key).String()
 }
 
-func (d *Destination) recordProperties(record sdk.Record) (map[string]interface{}, error) {
+func (d *Destination) recordProperties(record opencdc.Record) (map[string]interface{}, error) {
 	data := record.Payload.After
 
 	if data == nil || len(data.Bytes()) == 0 {
@@ -219,7 +193,6 @@ func (d *Destination) recordProperties(record sdk.Record) (map[string]interface{
 
 	properties := make(map[string]interface{})
 	err := json.Unmarshal(data.Bytes(), &properties)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal payload to structured data: %w", err)
 	}

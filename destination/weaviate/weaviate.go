@@ -83,7 +83,6 @@ func (c *Client) Insert(ctx context.Context, obj *Object) error {
 		WithVector(obj.Vector).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
-
 	if err != nil {
 		return fmt.Errorf("error creating object: %w", err)
 	}
@@ -98,7 +97,6 @@ func (c *Client) Update(ctx context.Context, obj *Object) error {
 		WithProperties(obj.Properties).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
-
 	if err != nil {
 		return fmt.Errorf("error update object: %w", err)
 	}
@@ -112,7 +110,6 @@ func (c *Client) Delete(ctx context.Context, obj *Object) error {
 		WithID(obj.ID).
 		WithConsistencyLevel(replication.ConsistencyLevel.ALL).
 		Do(ctx)
-
 	if err != nil {
 		return fmt.Errorf("error deleting object: %w", err)
 	}

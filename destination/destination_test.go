@@ -23,6 +23,7 @@ import (
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/mock"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/go-cmp/cmp"
 	"github.com/matryer/is"
@@ -72,7 +73,7 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":               "test-endpoint",
-		"scheme":                 "test-scheme",
+		"scheme":                 "https",
 		"auth.mechanism":         "wcsCreds",
 		"auth.wcsCreds.username": "conduit-user",
 		"auth.wcsCreds.password": "secret",
@@ -109,7 +110,7 @@ func TestDestination_Open_OpensClient(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
@@ -127,7 +128,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",
 		"class":              "test-class",
@@ -138,16 +139,16 @@ func TestDestination_SingleWrite(t *testing.T) {
 
 	testCases := []struct {
 		name   string
-		record sdk.Record
+		record opencdc.Record
 		want   *weaviate.Object
 	}{
 		{
 			name: "raw payload, raw key, use class from config",
 			record: sdk.Util.Source.NewRecordCreate(
-				sdk.Position("test-position"),
+				opencdc.Position("test-position"),
 				map[string]string{},
-				sdk.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
-				sdk.RawData(`{
+				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
+				opencdc.RawData(`{
 					"product_name": "computer",
 					"price":        1000,
 					"labels":       ["laptop", "navy-blue"],
@@ -168,10 +169,10 @@ func TestDestination_SingleWrite(t *testing.T) {
 		{
 			name: "structured payload, raw key, use class from config",
 			record: sdk.Util.Source.NewRecordCreate(
-				sdk.Position("test-position"),
+				opencdc.Position("test-position"),
 				map[string]string{},
-				sdk.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
-				sdk.StructuredData{
+				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
+				opencdc.StructuredData{
 					"product_name": "computer",
 					"price":        1000,
 					"labels":       []string{"laptop", "navy-blue"},
@@ -192,12 +193,12 @@ func TestDestination_SingleWrite(t *testing.T) {
 		{
 			name: "structured payload, raw key, use class from metadata",
 			record: sdk.Util.Source.NewRecordCreate(
-				sdk.Position("test-position"),
+				opencdc.Position("test-position"),
 				map[string]string{
 					metadataClass: "top-secret-class",
 				},
-				sdk.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
-				sdk.StructuredData{
+				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
+				opencdc.StructuredData{
 					"product_name": "computer",
 					"price":        1000,
 					"labels":       []string{"laptop", "navy-blue"},
@@ -222,7 +223,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 			underTest, wClient := setupTest(t, ctx, cfg)
 			wClient.EXPECT().Insert(ctx, newEqMatcher(tc.want))
 
-			n, err := underTest.Write(ctx, []sdk.Record{tc.record})
+			n, err := underTest.Write(ctx, []opencdc.Record{tc.record})
 			is.NoErr(err)
 			is.Equal(1, n)
 		})
@@ -234,7 +235,7 @@ func TestDestination_RecordWithVector(t *testing.T) {
 	ctx := context.Background()
 	cfg := map[string]string{
 		"endpoint":           "test-endpoint",
-		"scheme":             "test-scheme",
+		"scheme":             "https",
 		"class":              "test-class",
 		"auth.mechanism":     "apiKey",
 		"auth.apiKey":        "test-api-key",
@@ -275,13 +276,13 @@ func TestDestination_RecordWithVector(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			underTest, wClient := setupTest(t, ctx, cfg)
 			inputRec := sdk.Util.Source.NewRecordCreate(
-				sdk.Position("test-position"),
+				opencdc.Position("test-position"),
 				map[string]string{
 					metadataClass:  "top-secret-class",
 					metadataVector: tc.input,
 				},
-				sdk.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
-				sdk.StructuredData{
+				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
+				opencdc.StructuredData{
 					"product_name": "computer",
 					"price":        1000,
 					"labels":       []string{"laptop", "navy-blue"},
@@ -304,7 +305,7 @@ func TestDestination_RecordWithVector(t *testing.T) {
 				wClient.EXPECT().Insert(ctx, newEqMatcher(wantObj))
 			}
 
-			n, err := underTest.Write(ctx, []sdk.Record{inputRec})
+			n, err := underTest.Write(ctx, []opencdc.Record{inputRec})
 
 			if tc.wantErr == nil {
 				is.NoErr(err)

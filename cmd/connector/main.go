@@ -15,9 +15,8 @@
 package main
 
 import (
-	sdk "github.com/conduitio/conduit-connector-sdk"
-
 	weaviate "github.com/conduitio-labs/conduit-connector-weaviate"
+	sdk "github.com/conduitio/conduit-connector-sdk"
 )
 
 func main() {
