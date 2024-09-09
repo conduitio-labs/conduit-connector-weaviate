@@ -18,12 +18,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/conduitio/conduit-commons/opencdc"
 	"strings"
 	"testing"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/mock"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/go-cmp/cmp"
 	"github.com/matryer/is"

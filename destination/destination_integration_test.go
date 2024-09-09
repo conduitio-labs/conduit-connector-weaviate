@@ -18,11 +18,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/conduitio/conduit-commons/opencdc"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
 	"github.com/matryer/is"
