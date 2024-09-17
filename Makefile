@@ -1,5 +1,3 @@
-.PHONY: build test test-integration generate install-paramgen install-tools golangci-lint-install
-
 VERSION=$(shell git describe --tags --dirty --always)
 
 .PHONY: build
