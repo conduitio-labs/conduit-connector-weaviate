@@ -1,6 +1,6 @@
 module github.com/conduitio-labs/conduit-connector-weaviate
 
-go 1.22.5
+go 1.23.1
 
 require (
 	github.com/conduitio/conduit-commons v0.3.0

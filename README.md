@@ -36,3 +36,4 @@ which are: inserts, updates, and deletes.
 | `auth.wcsCreds.password` | Weaviate Cloud Services (WCS) password.                                                                                                 | Required if `auth.mechanism = wcsCreds`. | ""            |
 
 (For more information about authentication in Weaviate, refer to the Weaviate https://weaviate.io/developers/wcs/guides/authentication.)
+![scarf pixel](https://static.scarf.sh/a.png?x-pxid=3864585b-04e5-4a20-aa86-5bc4751f61b4)
