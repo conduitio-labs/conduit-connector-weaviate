@@ -27,3 +27,6 @@
 
 ### vim ###
 *.swp
+
+### GoReleaser ###
+dist/
