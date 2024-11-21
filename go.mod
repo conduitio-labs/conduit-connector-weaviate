@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/matryer/is v1.4.1
-	github.com/weaviate/weaviate-go-client/v4 v4.16.0
+	github.com/weaviate/weaviate-go-client/v4 v4.16.1
 	go.uber.org/mock v0.5.0
 )
 
