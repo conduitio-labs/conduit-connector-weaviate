@@ -19,6 +19,8 @@ package destination
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -162,7 +164,7 @@ func (d *Destination) toWeaviateObj(record opencdc.Record) (*weaviate.Object, er
 
 	var vector []float32
 	if record.Metadata != nil && record.Metadata[metadataVector] != "" {
-		vector, err = d.recordVector(record.Metadata[metadataVector])
+		vector, err = parseEmbeddings(record.Metadata[metadataVector])
 		if err != nil {
 			return nil, fmt.Errorf("failed parsing vector from metadata, input: %v, error: %w", record.Metadata[metadataVector], err)
 		}
@@ -224,20 +226,78 @@ func (d *Destination) weaviateConfig() weaviate.Config {
 	return cfg
 }
 
-func (d *Destination) recordVector(s string) ([]float32, error) {
-	var vector []float32
-	for _, vs := range strings.Split(s, ",") {
-		if vs == "" {
-			return nil, errors.New("got an empty string")
-		}
+// ParseEmbeddings takes a string input and attempts to parse it into a slice of float32 embeddings.
+// It supports two input formats:
+// 1. Base64 encoded embeddings
+// 2. CSV-formatted embeddings
+func parseEmbeddings(input string) ([]float32, error) {
+	input = strings.TrimSpace(input)
 
-		v, err := strconv.ParseFloat(vs, 32)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse %v: %w", vs, err)
-		}
-
-		vector = append(vector, float32(v))
+	if isBase64(input) {
+		return decodeBase64Embeddings(input)
 	}
 
-	return vector, nil
+	if isCSV(input) {
+		return readCSVVector(input)
+	}
+
+	// If not base64 or CSV, return an error
+	return nil, fmt.Errorf("unsupported input format: must be base64 or CSV")
+}
+
+func isBase64(input string) bool {
+	_, err := base64.StdEncoding.DecodeString(input)
+	return err == nil
+}
+
+func decodeBase64Embeddings(input string) ([]float32, error) {
+	decodedBytes, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64: %v", err)
+	}
+
+	// Note: This assumes the base64 represents a slice of float32
+	embeddings := make([]float32, len(decodedBytes)/4)
+	for i := range embeddings {
+		bits := uint32(decodedBytes[i*4]) |
+			uint32(decodedBytes[i*4+1])<<8 |
+			uint32(decodedBytes[i*4+2])<<16 |
+			uint32(decodedBytes[i*4+3])<<24
+		embeddings[i] = float32(bits)
+	}
+
+	return embeddings, nil
+}
+
+func isCSV(input string) bool {
+	return strings.Contains(input, ",")
+}
+
+// readCSVVector parses a CSV string into a slice of float32
+func readCSVVector(input string) ([]float32, error) {
+	// Use csv.Reader to handle potential quotes and escaped characters
+	reader := csv.NewReader(strings.NewReader(input))
+
+	// Read the first (and assumed only) record
+	record, err := reader.Read()
+	if err != nil {
+		return nil, fmt.Errorf("error reading CSV: %v", err)
+	}
+
+	// Convert CSV fields to float32
+	embeddings := make([]float32, len(record))
+	for i, val := range record {
+		// Trim any whitespace
+		val = strings.TrimSpace(val)
+
+		// Convert to float64 first to handle scientific notation
+		floatVal, err := strconv.ParseFloat(val, 32)
+		if err != nil {
+			return nil, fmt.Errorf("error converting %s to float: %v", val, err)
+		}
+
+		embeddings[i] = float32(floatVal)
+	}
+
+	return embeddings, nil
 }
