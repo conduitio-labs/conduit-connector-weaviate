@@ -21,6 +21,7 @@ import (
 type WeaviateClient struct {
 	ctrl     *gomock.Controller
 	recorder *WeaviateClientMockRecorder
+	isgomock struct{}
 }
 
 // WeaviateClientMockRecorder is the mock recorder for WeaviateClient.
