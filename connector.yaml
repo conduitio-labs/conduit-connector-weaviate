@@ -1,0 +1,127 @@
+version: "1.0"
+specification:
+  name: weaviate
+  summary: A Conduit destination connector for Weaviate, written in Go.
+  description: A Conduit destination connector for Weaviate, written in Go
+  version: v0.0.1
+  author: Meroxa, Inc.
+  destination:
+    parameters:
+      - name: class
+        description: |-
+          The class name as defined in the schema.
+          A record will be saved under this class unless
+          it has the `weaviate.class` metadata field.
+        type: string
+        default: ""
+        validations:
+          - type: required
+            value: ""
+      - name: endpoint
+        description: Host of the Weaviate instance.
+        type: string
+        default: ""
+        validations:
+          - type: required
+            value: ""
+      - name: auth.apiKey
+        description: A Weaviate API key.
+        type: string
+        default: ""
+        validations: []
+      - name: auth.mechanism
+        description: Mechanism specifies in which way the connector will authenticate to Weaviate.
+        type: string
+        default: none
+        validations:
+          - type: inclusion
+            value: none,apiKey,wcsCreds
+      - name: auth.wcsCreds.password
+        description: WCS password
+        type: string
+        default: ""
+        validations: []
+      - name: auth.wcsCreds.username
+        description: WCS username
+        type: string
+        default: ""
+        validations: []
+      - name: generateUUID
+        description: |-
+          Whether a UUID for records should be automatically generated.
+          The generated UUIDs are MD5 sums of record keys.
+        type: bool
+        default: ""
+        validations: []
+      - name: moduleHeader.name
+        description: Name of the header configuring a module (e.g. `X-OpenAI-Api-Key`)
+        type: string
+        default: ""
+        validations: []
+      - name: moduleHeader.value
+        description: Value for header given in `moduleHeader.name`.
+        type: string
+        default: ""
+        validations: []
+      - name: scheme
+        description: Scheme of the Weaviate instance.
+        type: string
+        default: https
+        validations:
+          - type: inclusion
+            value: http,https
+      - name: sdk.batch.delay
+        description: Maximum delay before an incomplete batch is written to the destination.
+        type: duration
+        default: "0"
+        validations: []
+      - name: sdk.batch.size
+        description: Maximum size of batch before it gets written to the destination.
+        type: int
+        default: "0"
+        validations:
+          - type: greater-than
+            value: "-1"
+      - name: sdk.rate.burst
+        description: |-
+          Allow bursts of at most X records (0 or less means that bursts are not
+          limited). Only takes effect if a rate limit per second is set. Note that
+          if `sdk.batch.size` is bigger than `sdk.rate.burst`, the effective batch
+          size will be equal to `sdk.rate.burst`.
+        type: int
+        default: "0"
+        validations:
+          - type: greater-than
+            value: "-1"
+      - name: sdk.rate.perSecond
+        description: Maximum number of records written per second (0 means no rate limit).
+        type: float
+        default: "0"
+        validations:
+          - type: greater-than
+            value: "-1"
+      - name: sdk.record.format
+        description: |-
+          The format of the output record. See the Conduit documentation for a full
+          list of supported formats (https://conduit.io/docs/using/connectors/configuration-parameters/output-format).
+        type: string
+        default: opencdc/json
+        validations: []
+      - name: sdk.record.format.options
+        description: |-
+          Options to configure the chosen output record format. Options are normally
+          key=value pairs separated with comma (e.g. opt1=val2,opt2=val2), except
+          for the `template` record format, where options are a Go template.
+        type: string
+        default: ""
+        validations: []
+      - name: sdk.schema.extract.key.enabled
+        description: Whether to extract and decode the record key with a schema.
+        type: bool
+        default: "true"
+        validations: []
+      - name: sdk.schema.extract.payload.enabled
+        description: Whether to extract and decode the record payload with a schema.
+        type: bool
+        default: "true"
+        validations: []

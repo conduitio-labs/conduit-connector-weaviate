@@ -14,9 +14,17 @@
 
 package destination
 
-import "github.com/conduitio-labs/conduit-connector-weaviate/config"
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/conduitio-labs/conduit-connector-weaviate/config"
+	sdk "github.com/conduitio/conduit-connector-sdk"
+)
 
 type Config struct {
+	sdk.DefaultDestinationMiddleware
 	config.Config
 	// TODO: better naming for this value __sL__
 	// Vectorizers which can be configured client side
@@ -40,4 +48,22 @@ type ModuleHeader struct {
 func (m ModuleHeader) IsValid() bool {
 	return (m.Name == "" && m.Value == "") ||
 		(m.Name != "" && m.Value != "")
+}
+
+func (c *Config) Validate(ctx context.Context) error {
+	err := c.DefaultDestinationMiddleware.Validate(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !c.ModuleHeader.IsValid() {
+		return errors.New("invalid module configuration")
+	}
+
+	err = c.Config.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid configuration: %w", err)
+	}
+
+	return nil
 }

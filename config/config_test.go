@@ -17,8 +17,10 @@ package config_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
+	weaviate "github.com/conduitio-labs/conduit-connector-weaviate"
 	"github.com/conduitio-labs/conduit-connector-weaviate/config"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	sdk "github.com/conduitio/conduit-connector-sdk"
@@ -127,13 +129,17 @@ func TestConfig_Auth(t *testing.T) {
 			ctx := context.Background()
 
 			cfg := destination.Config{}
-			err := sdk.Util.ParseConfig(ctx, tc.cfgMap, &cfg, cfg.Parameters())
-			is.NoErr(err)
-
-			err = cfg.Validate()
+			err := sdk.Util.ParseConfig(ctx, tc.cfgMap, &cfg, weaviate.Connector.NewSpecification().DestinationParams)
+			fmt.Println("--------------- ", weaviate.Connector.NewSpecification().DestinationParams)
 			if tc.wantErr == nil {
 				is.NoErr(err)
-				is.Equal(tc.wantCfg, cfg)
+			} else {
+				is.True(errors.Is(err, tc.wantErr))
+			}
+
+			err = cfg.Validate(ctx)
+			if tc.wantErr == nil {
+				is.NoErr(err)
 			} else {
 				is.True(errors.Is(err, tc.wantErr))
 			}

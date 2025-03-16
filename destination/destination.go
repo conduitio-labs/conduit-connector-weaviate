@@ -14,7 +14,6 @@
 
 package destination
 
-//go:generate paramgen -output=paramgen_dest.go Config
 //go:generate mockgen -source=destination.go -package=mock -destination=mock/client_mock.go -mock_names=weaviateClient=WeaviateClient . weaviateClient
 
 import (
@@ -25,7 +24,6 @@ import (
 	"strconv"
 	"strings"
 
-	sdkconfig "github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
@@ -34,8 +32,8 @@ import (
 )
 
 var (
-	metadataClass  = "weaviate.class"
-	metadataVector = "weaviate.vector"
+	MetadataClass  = "weaviate.class"
+	MetadataVector = "weaviate.vector"
 )
 
 type weaviateClient interface {
@@ -60,31 +58,11 @@ func New() sdk.Destination {
 func NewWithClient(client weaviateClient) sdk.Destination {
 	return sdk.DestinationWithMiddleware(
 		&Destination{client: client},
-		sdk.DefaultDestinationMiddleware()...,
 	)
 }
 
-func (d *Destination) Parameters() sdkconfig.Parameters {
-	return d.config.Parameters()
-}
-
-func (d *Destination) Configure(ctx context.Context, cfg sdkconfig.Config) error {
-	sdk.Logger(ctx).Info().Msg("Configuring Destination...")
-	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, New().Parameters())
-	if err != nil {
-		return fmt.Errorf("invalid config: %w", err)
-	}
-
-	if !d.config.ModuleHeader.IsValid() {
-		return errors.New("invalid module configuration")
-	}
-
-	err = d.config.Validate()
-	if err != nil {
-		return fmt.Errorf("invalid configuration: %w", err)
-	}
-
-	return nil
+func (d *Destination) Config() sdk.DestinationConfig {
+	return &d.config
 }
 
 func (d *Destination) Open(context.Context) error {
@@ -156,15 +134,15 @@ func (d *Destination) toWeaviateObj(record opencdc.Record) (*weaviate.Object, er
 	}
 
 	class := d.config.Class
-	if record.Metadata != nil && record.Metadata[metadataClass] != "" {
-		class = record.Metadata[metadataClass]
+	if record.Metadata != nil && record.Metadata[MetadataClass] != "" {
+		class = record.Metadata[MetadataClass]
 	}
 
 	var vector []float32
-	if record.Metadata != nil && record.Metadata[metadataVector] != "" {
-		vector, err = d.recordVector(record.Metadata[metadataVector])
+	if record.Metadata != nil && record.Metadata[MetadataVector] != "" {
+		vector, err = d.recordVector(record.Metadata[MetadataVector])
 		if err != nil {
-			return nil, fmt.Errorf("failed parsing vector from metadata, input: %v, error: %w", record.Metadata[metadataVector], err)
+			return nil, fmt.Errorf("failed parsing vector from metadata, input: %v, error: %w", record.Metadata[MetadataVector], err)
 		}
 	}
 

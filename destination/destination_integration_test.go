@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package destination
+package destination_test
 
 import (
 	"context"
@@ -22,6 +22,8 @@ import (
 	"testing"
 	"time"
 
+	weaviateConn "github.com/conduitio-labs/conduit-connector-weaviate"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
@@ -73,8 +75,8 @@ func integrationTestInsert(t *testing.T, openAIKey string, wantVector []float32)
 		is.NoErr(err)
 	}()
 
-	underTest := New()
-	err = underTest.Configure(ctx, cfg)
+	underTest := destination.New()
+	err = sdk.Util.ParseConfig(ctx, cfg, underTest.Config(), weaviateConn.Connector.NewSpecification().DestinationParams)
 	is.NoErr(err)
 
 	err = underTest.Open(ctx)
@@ -94,7 +96,7 @@ func integrationTestInsert(t *testing.T, openAIKey string, wantVector []float32)
 		opencdc.StructuredData(wantProperties),
 	)
 	if wantVector != nil {
-		rec.Metadata[metadataVector] = toString(wantVector)
+		rec.Metadata[destination.MetadataVector] = toString(wantVector)
 	}
 
 	n, err := underTest.Write(ctx, []opencdc.Record{rec})
@@ -154,8 +156,8 @@ func TestDestination_Integration_Update(t *testing.T) {
 		is.NoErr(err)
 	}()
 
-	underTest := New()
-	err = underTest.Configure(ctx, cfg)
+	underTest := destination.New()
+	err = sdk.Util.ParseConfig(ctx, cfg, underTest.Config(), weaviateConn.Connector.NewSpecification().DestinationParams)
 	is.NoErr(err)
 
 	err = underTest.Open(ctx)
@@ -235,8 +237,8 @@ func TestDestination_Integration_Delete(t *testing.T) {
 		is.NoErr(err)
 	}()
 
-	underTest := New()
-	err = underTest.Configure(ctx, cfg)
+	underTest := destination.New()
+	err = sdk.Util.ParseConfig(ctx, cfg, underTest.Config(), weaviateConn.Connector.NewSpecification().DestinationParams)
 	is.NoErr(err)
 
 	err = underTest.Open(ctx)
