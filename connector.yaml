@@ -3,7 +3,7 @@ specification:
   name: weaviate
   summary: A Conduit destination connector for Weaviate, written in Go.
   description: A Conduit destination connector for Weaviate, written in Go
-  version: v0.0.1
+  version: v0.2.0
   author: Meroxa, Inc.
   destination:
     parameters:
