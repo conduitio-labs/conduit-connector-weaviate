@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package destination
+package destination_test
 
 import (
 	"context"
@@ -23,6 +23,9 @@ import (
 
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/mock"
 	"github.com/conduitio-labs/conduit-connector-weaviate/destination/weaviate"
+
+	weaviateConn "github.com/conduitio-labs/conduit-connector-weaviate"
+	"github.com/conduitio-labs/conduit-connector-weaviate/destination"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/go-cmp/cmp"
@@ -63,7 +66,7 @@ func (eq eqMatcher) String() string {
 
 func TestDestination_Teardown_NoOpen(t *testing.T) {
 	is := is.New(t)
-	underTest := New()
+	underTest := destination.New()
 	err := underTest.Teardown(context.Background())
 	is.NoErr(err)
 }
@@ -98,8 +101,8 @@ func TestDestination_Open_WCSAuth(t *testing.T) {
 			},
 		}))
 
-	underTest := NewWithClient(client)
-	err := underTest.Configure(ctx, cfg)
+	underTest := destination.NewWithClient(client)
+	err := sdk.Util.ParseConfig(ctx, cfg, underTest.Config(), weaviateConn.Connector.NewSpecification().DestinationParams)
 	is.NoErr(err)
 
 	err = underTest.Open(ctx)
@@ -195,7 +198,7 @@ func TestDestination_SingleWrite(t *testing.T) {
 			record: sdk.Util.Source.NewRecordCreate(
 				opencdc.Position("test-position"),
 				map[string]string{
-					metadataClass: "top-secret-class",
+					destination.MetadataClass: "top-secret-class",
 				},
 				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
 				opencdc.StructuredData{
@@ -278,8 +281,8 @@ func TestDestination_RecordWithVector(t *testing.T) {
 			inputRec := sdk.Util.Source.NewRecordCreate(
 				opencdc.Position("test-position"),
 				map[string]string{
-					metadataClass:  "top-secret-class",
-					metadataVector: tc.input,
+					destination.MetadataClass:  "top-secret-class",
+					destination.MetadataVector: tc.input,
 				},
 				opencdc.RawData("f9a510b3-5865-40e4-9fe8-e7fbab25b8bc"),
 				opencdc.StructuredData{
@@ -333,8 +336,8 @@ func setupTest(t *testing.T, ctx context.Context, cfg map[string]string) (sdk.De
 			},
 		}))
 
-	underTest := NewWithClient(client)
-	err := underTest.Configure(ctx, cfg)
+	underTest := destination.NewWithClient(client)
+	err := sdk.Util.ParseConfig(ctx, cfg, underTest.Config(), weaviateConn.Connector.NewSpecification().DestinationParams)
 	is.NoErr(err)
 
 	err = underTest.Open(ctx)
