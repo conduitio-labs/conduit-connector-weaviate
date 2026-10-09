@@ -35,9 +35,13 @@ import (
 func TestDestination_Integration_Insert(t *testing.T) {
 	integrationTest(t)
 
-	is := is.New(t)
 	openAIKey := os.Getenv("OPENAI_APIKEY")
-	is.True(openAIKey != "") // expected OPENAI_APIKEY to be set
+	if openAIKey == "" {
+		// The test class uses the OpenAI vectorizer, so the test cannot run
+		// without a key. Skip rather than fail, like the other credential-gated
+		// tests in the labs connectors.
+		t.Skip("OPENAI_APIKEY is not set")
+	}
 
 	testCases := []struct {
 		name   string
@@ -140,7 +144,12 @@ func TestDestination_Integration_Update(t *testing.T) {
 
 	is := is.New(t)
 	openAIKey := os.Getenv("OPENAI_APIKEY")
-	is.True(openAIKey != "") // expected OPENAI_APIKEY to be set
+	if openAIKey == "" {
+		// The test class uses the OpenAI vectorizer, so the test cannot run
+		// without a key. Skip rather than fail, like the other credential-gated
+		// tests in the labs connectors.
+		t.Skip("OPENAI_APIKEY is not set")
+	}
 
 	ctx := context.Background()
 	class := fmt.Sprintf("Products_%v", time.Now().UnixMilli())
@@ -221,7 +230,12 @@ func TestDestination_Integration_Delete(t *testing.T) {
 
 	is := is.New(t)
 	openAIKey := os.Getenv("OPENAI_APIKEY")
-	is.True(openAIKey != "") // expected OPENAI_APIKEY to be set
+	if openAIKey == "" {
+		// The test class uses the OpenAI vectorizer, so the test cannot run
+		// without a key. Skip rather than fail, like the other credential-gated
+		// tests in the labs connectors.
+		t.Skip("OPENAI_APIKEY is not set")
+	}
 
 	ctx := context.Background()
 	class := fmt.Sprintf("products_%v", time.Now().UnixMilli())
